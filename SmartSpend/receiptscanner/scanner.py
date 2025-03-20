@@ -3,26 +3,61 @@ import cv2
 import os
 import imutils
 from imutils.perspective import four_point_transform
+import pytesseract
+import re
+import json
+from dateutil import parser
 
+#Filter
+os.environ["QT_QPA_PLATFORM"] = "offscreen"  
 
-#Image Filtering
+print("1 - English")
+print("2 - Bulgarian")
 
-os.environ["QT_QPA_PLATFORM"] = "offscreen" #error handling deto maj ne ni trqbva????? 
+while True:
+    try:
+        choice = int(input("Enter choice (1 or 2): ").strip())
+        if choice in [1, 2]:
+            break
+        else:
+            print("Invalid choice. Please enter 1 or 2.")
+    except ValueError:
+        print("Invalid input. Please enter a number (1 or 2).")
+
+if (choice == 1): 
+    language_choice = "english"    
+elif(choice==2):
+    language_choice="bulgarian"
+
+def set_language_config(language):
+    if language == "bulgarian":
+        return {
+            "ocr_lang": "bul+eng",
+            "subtotal_regex": r'(Subtotal|Междинна сума)\s*(?:BGN|лв)?\s*([\d,.]+)',
+            "tip_regex": r'(Tip|Бакшиш)[:\s]+([\d,.]+)',
+            "total_regex": r'(Total|Общо)\s*(?:BGN|лв)?\s*([\d,.]+)',
+            "date_regex": r'(\d{2}[./-]\d{2}[./-]\d{4})'
+        }
+    else: 
+        return {
+            "ocr_lang": "eng",
+            "subtotal_regex": r'Sub\s*Total\s*USD?\$?\s*([\d.]+)',
+            "tip_regex": r'Tip[:\s]+([\d.]+)',
+            "total_regex": r'Total\s*USD?\$?\s*([\d.]+)',
+            "date_regex": r'(\d{2}/\d{2}/\d{4})'
+        }
+
+config = set_language_config(language_choice)
+
+# Image Processing
 
 image = cv2.imread('./testimages/testimage4.jpeg')
-
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-#blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-
-#thresh = cv2.adaptiveThreshold(
-#    blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
 kernel = np.ones((5, 5), np.uint8)
 thresh = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel)
 
 contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
 contours = sorted(contours, key=cv2.contourArea, reverse=True)
 screen_contour = None
 
@@ -40,21 +75,22 @@ cv2.drawContours(debug_image, [screen_contour], -1, (0, 255, 0), 2)
 filtered = four_point_transform(thresh, screen_contour.reshape(4, 2))
 cv2.imwrite("imagefiltered.jpg", filtered)
 
-
-#Text from Image Scanner
-
-import pytesseract
-
 inverted_filtered = cv2.bitwise_not(filtered)
 resized = cv2.resize(inverted_filtered, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-custom_config = r'--oem 3 --psm 6'  # OCR Engine Mode 3, Page Segmentation Mode 6 
-extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang="eng")
 
+#Image to text
 
-#Text Sender
+custom_config = r'--oem 3 --psm 6'
+extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang=config["ocr_lang"])
 
-import re
-import json
+#Extracting from text
+
+def format_date(date_str):
+    try:
+        parsed_date = parser.parse(date_str, dayfirst=True)  
+        return parsed_date.strftime("%d.%m.%Y") 
+    except ValueError:
+        return None
 
 def extract_receipt_data(ocr_text):
     data = {}
@@ -62,34 +98,30 @@ def extract_receipt_data(ocr_text):
     lines = ocr_text.strip().split("\n")
     data["Store Name"] = lines[0].strip()
 
-    datetime_match = re.search(r'(\w{3} \d{2}/\d{2}/\d{4}) (\d{1,2}:\d{2} [APM]{2})', ocr_text)
-    date_match = re.search(r'(\d{2}/\d{2}/\d{4})', ocr_text)
+    date_match = re.search(config["date_regex"], ocr_text)
+    if date_match:
+        data["Date & Time"] = format_date(date_match.group(1))
 
-    if datetime_match:
-        data["Date & Time"] = f"{datetime_match.group(1)} {datetime_match.group(2)}"
-    elif date_match:
-        data["Date & Time"] = date_match.group(1)
+    subtotal_match = re.search(config["subtotal_regex"], ocr_text, re.IGNORECASE)
+    tip_match = re.search(config["tip_regex"], ocr_text, re.IGNORECASE)
+    total_match = re.search(config["total_regex"], ocr_text, re.IGNORECASE)
 
-    subtotal_match = re.search(r'Sub\s*Total\s*USD?\$?\s*([\d.]+)', ocr_text, re.IGNORECASE)
-    subtotal = float(subtotal_match.group(1)) if subtotal_match else None
+    subtotal = float(subtotal_match.group(1).replace(',', '.')) if subtotal_match else None
+    tip = float(tip_match.group(1).replace(',', '.')) if tip_match else None
+    total_price = float(total_match.group(1).replace(',', '.')) if total_match else None
 
-    tip_match = re.search(r'Tip[:\s]+([\d.]+)', ocr_text, re.IGNORECASE)
-    tip = float(tip_match.group(1)) if tip_match else None
+    print(subtotal, tip, total_price)
 
-    total_match = re.search(r'Total\s*USD?\$?\s*([\d.]+)', ocr_text, re.IGNORECASE)
-    total_price = float(total_match.group(1)) if total_match else None
-
-    print(subtotal,tip,total_price)
-    if(tip is not None):
-        if(total_price==subtotal and tip>0):
+    if tip is not None:
+        if total_price == subtotal and tip > 0:
             total_price = None
-    elif(total_price==subtotal):
+    elif total_price == subtotal:
         subtotal = None
 
     if subtotal is None and tip is None and total_price is None:
         return json.dumps({"error": "No subtotal, tip, or total found. This might not be a valid receipt."}, indent=4)
 
-    if subtotal is not None and total_price is not None and (tip is None):
+    if subtotal is not None and total_price is not None and tip is None:
         tip = round(total_price - subtotal, 2) 
 
     elif tip is not None and total_price is not None and subtotal is None:
@@ -107,8 +139,8 @@ def extract_receipt_data(ocr_text):
 
     data["Subtotal"] = subtotal
     data["Tip"] = tip
+    data["Total Price"] = total_price
 
     return json.dumps(data, indent=4)
 
-
-print(extract_receipt_data(extracted_text) )
+print(extract_receipt_data(extracted_text))
