@@ -1,0 +1,101 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.container {
+    max-width: 900px;
+}
+
+#summary-btn {
+    display: block;
+    width: 100%;
+    max-width: 250px;
+    margin: 20px auto;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.card h5 {
+    font-size: 1.2rem;
+    color: #555;
+}
+
+.card h3 {
+    font-size: 1.8rem;
+    color: #333;
+    font-weight: bold;
+}
+
+canvas {
+    display: block;
+    margin: 20px auto;
+}
+
+#summaryChart {
+    display: block;
+    margin: 20px auto;
+    max-width: 100%;
+}
+
+.chart-container {
+    height: 300px;
+    width: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+
+#summaryTable {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#summaryTable th {
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+}
+
+#summaryTable td {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.text-success {
+    color: green !important;
+}
+
+.text-danger {
+    color: red !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 15px;
+    }
+
+    #summary-btn {
+        width: 100%;
+    }
+}
