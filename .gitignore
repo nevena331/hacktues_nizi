@@ -4,7 +4,9 @@ signing.der
 transport.der
 .venv
 .env
-__pycache__/
 signing.pem
 transport.pem
 public.pem
+__pycache__/
+*.py[cod]
+*.pyo
