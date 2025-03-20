@@ -7,3 +7,6 @@ transport.der
 SmartSpend/finance_track/__pycache__
 SmartSpend/finance_track/migrations/__pycache__
 SmartSpend/SmartSpend/__pycache__
+signing.pem
+transport.pem
+public.pem
