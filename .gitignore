@@ -4,6 +4,4 @@ signing.der
 transport.der
 .venv
 .env
-SmartSpend/finance_track/__pycache__
-SmartSpend/finance_track/migrations/__pycache__
-SmartSpend/SmartSpend/__pycache__
+__pycache__/
