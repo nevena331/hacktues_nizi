@@ -2,3 +2,4 @@ private.key
 revolut.csr
 signing.der
 transport.der
+.venv
