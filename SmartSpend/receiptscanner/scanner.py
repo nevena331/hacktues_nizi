@@ -111,4 +111,4 @@ def extract_receipt_data(ocr_text):
     return json.dumps(data, indent=4)
 
 
-print(extract_receipt_data(extracted_text))
+print(extract_receipt_data(extracted_text) )
