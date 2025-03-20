@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'nizi.urls'
+ROOT_URLCONF = 'SmartSpend.urls'
 
 TEMPLATES = [
     {
@@ -68,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'nizi.wsgi.application'
+WSGI_APPLICATION = 'SmartSpend.wsgi.application'
 
 
 # Database
