@@ -17,11 +17,10 @@ blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 thresh = cv2.adaptiveThreshold(
     blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
-#do tuk - kopirah tiq neshta 2 puti shtoto nz kak ne bachkaha purviq put
-
 kernel = np.ones((5, 5), np.uint8)
 thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
 
+#do tuk - kopirah tiq neshta 2 puti shtoto nz kak ne bachkaha purviq put
 contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 contours = sorted(contours, key=cv2.contourArea, reverse=True)
@@ -36,11 +35,13 @@ for contour in contours:
         break
 
 if screen_contour is not None:
-    debug_image = image.copy()
+    debug_image = thresh.copy()
     cv2.drawContours(debug_image, [screen_contour], -1, (0, 255, 0), 2)
 
-    warped = four_point_transform(image, screen_contour.reshape(4, 2))
+    warped = four_point_transform(thresh, screen_contour.reshape(4, 2))
 
+    #tova e kopiranoto ot tuk
+    '''
     gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
 
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -51,7 +52,9 @@ if screen_contour is not None:
     kernel = np.ones((5, 5), np.uint8)
     thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
 
-    cv2.imwrite("warped_perspective.jpg", thresh)
+    #do tuk
+    '''
+    cv2.imwrite("warped_perspective.jpg", warped)
     print("Perspective transformation completed successfully!")
 else:
     print("No rectangular contour found.")
