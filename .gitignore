@@ -10,3 +10,4 @@ public.pem
 __pycache__/
 *.py[cod]
 *.pyo
+.vscode
