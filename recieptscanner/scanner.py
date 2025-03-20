@@ -9,17 +9,17 @@ from imutils.perspective import four_point_transform
 
 os.environ["QT_QPA_PLATFORM"] = "offscreen" #error handling deto maj ne ni trqbva????? 
 
-image = cv2.imread('./testimages/testimage3.jpg')
+image = cv2.imread('./testimages/testimage4.jpeg')
 
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+#blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-thresh = cv2.adaptiveThreshold(
-    blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+#thresh = cv2.adaptiveThreshold(
+#    blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
 kernel = np.ones((5, 5), np.uint8)
-thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+thresh = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel)
 
 contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -46,7 +46,13 @@ if screen_contour is not None:
 else:
     print("No rectangular contour found.")
 
+    #return message to user to post a better image;
+
 
 #Text from Image Scanner
 
+import pytesseract
 
+extracted_text = pytesseract.image_to_string(filtered, lang="eng")
+
+print(extracted_text)
