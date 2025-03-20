@@ -3,5 +3,6 @@ Django==5.1.7
 postgres==4.0
 psycopg2-binary==2.9.10
 psycopg2-pool==1.2
+python-dotenv==1.0.1
 sqlparse==0.5.3
 typing_extensions==4.12.2
