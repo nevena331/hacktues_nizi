@@ -73,3 +73,13 @@ def truelayer_callback(request):
 
     print(f"Token data: {token_data}")
     return JsonResponse(token_data)
+
+
+from django.shortcuts import redirect
+from .utils import get_truelayer_auth_url
+
+def connect_truelayer(request):
+    # Generate the TrueLayer auth URL
+    auth_url = get_truelayer_auth_url()
+    # Redirect the user to TrueLayer's authentication dialog
+    return redirect(auth_url)

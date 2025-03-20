@@ -127,5 +127,5 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 TRUELAYER_CLIENT_ID = os.environ.get("sandbox-smartspend-9f4cc6")
 TRUELAYER_CLIENT_SECRET = os.environ.get("9f48e6dd-bc29-4796-8a89-d718a8cfa466")
-TRUELAYER_REDIRECT_URI = os.environ.get("http://127.0.0.1:5432/callback")
+TRUELAYER_REDIRECT_URI = os.environ.get("http://127.0.0.1:5432/truelayer/callback")
 TRUELAYER_TOKEN_URL = "https://api.truelayer.com/connect/token"
