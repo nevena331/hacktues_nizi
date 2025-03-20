@@ -5,3 +5,6 @@ transport.der
 .venv
 .env
 __pycache__/
+signing.pem
+transport.pem
+public.pem
