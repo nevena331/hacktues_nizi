@@ -1,1 +1,0 @@
-print("Tova e testov file")
