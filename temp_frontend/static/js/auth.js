@@ -14,3 +14,12 @@ function toggleForm() {
 document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("login-box").style.display = "block";
 });
+
+
+function togglePlaceholder(input) {
+    input.placeholder = "example@gmail.com";
+}
+
+function restorePlaceholder(input) {
+    input.placeholder = "Email";
+} 
