@@ -3,8 +3,7 @@ from django.conf import settings
 import uuid
 
 def get_truelayer_auth_url():
-    # Base URL for TrueLayer auth – use sandbox URL if testing (e.g., "https://auth.truelayer-sandbox.com/")
-    base_auth_url = "https://auth.truelayer.com/"
+    base_auth_url = "https://auth.truelayer-sandbox.com/"
 
     # Generate a unique state token (in production, you may want to store and later validate this)
     state = str(uuid.uuid4())
