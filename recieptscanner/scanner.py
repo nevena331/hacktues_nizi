@@ -53,6 +53,9 @@ else:
 
 import pytesseract
 
-extracted_text = pytesseract.image_to_string(filtered, lang="eng")
+inverted_filtered = cv2.bitwise_not(filtered)
+resized = cv2.resize(inverted_filtered, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+custom_config = r'--oem 3 --psm 6'  # OCR Engine Mode 3, Page Segmentation Mode 6 
+extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang="eng")
 
 print(extracted_text)
