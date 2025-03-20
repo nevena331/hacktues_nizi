@@ -3,5 +3,5 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerEr
 
 # Create your views here.
 
-def index(request):
+def frontpage(request):
     return HttpResponse("Hello")
