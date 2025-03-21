@@ -13,7 +13,7 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 #1 - English
 #2 - Bulgarian
-choice = 1
+choice = 2
 if choice == 1: 
     language_choice = "english"    
 elif choice == 2:
@@ -39,7 +39,7 @@ def set_language_config(language):
 
 config = set_language_config(language_choice)
 
-image = cv2.imread('./testimages/testimage4.jpeg')
+image = cv2.imread('./testimages/testimage12.jpg')
 if image is None:
     print("Error: Image not loaded. Check your file path.")
     exit(1)
@@ -58,7 +58,7 @@ contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
 screen_contour = None
 img_area = image.shape[0] * image.shape[1]
-min_area_threshold = img_area * 0.4  # 0.4=40% ot snimkata, tova moje da se smenq svobodno
+min_area_threshold = img_area * 0.4  # 0.4 ot snimkata, tova moje da se smenq svobodno
 valid_contours = []
 
 for contour in contours:
@@ -69,18 +69,16 @@ for contour in contours:
         if area >= min_area_threshold:
             valid_contours.append((approx, area))
 
+use_full_image = False
+
 if valid_contours:
     screen_contour = max(valid_contours, key=lambda x: x[1])[0]
 else:
-    print("⚠️ No valid 4-point contour meeting area threshold found. Using rotated bounding box of the largest contour.")
-    if len(contours) > 0:
-        rect = cv2.minAreaRect(contours[0])
-        box = cv2.boxPoints(rect)
-        screen_contour = np.array(box, dtype="int")
-    else:
-        screen_contour = None
+    print(" No valid 4-point contour meeting area threshold found. Using full image for OCR.")
+    use_full_image = True
+    screen_contour = None
 
-if screen_contour is not None:
+if not use_full_image and screen_contour is not None:
     debug_image = image.copy()
     cv2.drawContours(debug_image, [screen_contour], -1, (0, 255, 0), 2)
     cv2.imwrite("debug_contour.jpg", debug_image)
@@ -89,21 +87,20 @@ if screen_contour is not None:
     cv2.imwrite("warped_perspective.jpg", warped)
     print("Perspective transformation completed successfully!")
 else:
-    print("No rectangular contour found.")
-    warped = image.copy()  # fallback
+    print("Using full image without transformation.")
+    warped = image.copy()
 
 #Debug
 debug_all = image.copy()
 cv2.drawContours(debug_all, contours, -1, (0, 255, 0), 2)
 cv2.imwrite("debug_all_contours.jpg", debug_all)
 
-import pytesseract
-
 #Process image
 inverted_filtered = cv2.bitwise_not(warped)
 resized = cv2.resize(inverted_filtered, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
 custom_config = r'--oem 3 --psm 6'
 extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang=config["ocr_lang"])
+
 
 if len(extracted_text.strip()) < 10:
     print("Extracted text from warped image is insufficient. Trying the base image.")
@@ -113,6 +110,22 @@ if len(extracted_text.strip()) < 10:
         extracted_text = ""
     else:
         extracted_text = base_extracted_text
+
+# Extracted Text Cleanup
+
+def clean_ocr_text(text, language):
+    if language == "bulgarian":
+        allowed_chars = "абвгдежзийклмнопрстуфхцчшщъьюяАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЮЯ" \
+                        "0123456789.,:/-лвBGN "  
+    else:
+        allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+                        "0123456789.,:/-$%()&@ USD"  
+
+    cleaned_text = ''.join(char for char in text if char in allowed_chars or char.isspace())
+    return cleaned_text
+
+
+extracted_text = clean_ocr_text(extracted_text, language_choice)
 
 print("Extracted Text:")
 print(extracted_text)
@@ -124,55 +137,97 @@ def format_date(date_str):
         return parsed_date.strftime("%d.%m.%Y") 
     except ValueError:
         return None
+    
 
-def extract_receipt_data(ocr_text):
-    data = {}
-    lines = ocr_text.strip().split("\n")
-    if not lines:
-        return json.dumps({"error": "No text found in the image."}, indent=4)
-    data["Store Name"] = lines[0].strip()
 
-    date_match = re.search(config["date_regex"], ocr_text)
+def extract_structured_data(ocr_text, language):
+
+    lines = [line.strip() for line in ocr_text.split("\n") if line.strip()]
+    items = []
+    date = None
+    total = None
+    store_name = None
+
+    #OCR errors
+    ocr_text = ocr_text.replace("USDS", "USD").replace("USD$", "USD").replace("oad", "00")
+    if language == "bulgarian":
+        ocr_text = ocr_text.replace("счма", "сума")
+
+    if language == "bulgarian":
+        total_regex = r'(общо|обща сума)[:\s]*([\d,\.]+)\s*(лв|BGN)?'
+        date_regex = r'(\d{2}[./-]\d{2}[./-]\d{4})'
+        default_currency = "BGN"
+    else:
+        total_regex = r'(?<!sub\s)(?<!subtotal\s)(total|receipt total)[^\d]{0,10}([\d,\.]+)\s*(USD|\$)?'
+        date_regex = r'(\d{2}/\d{2}/\d{4})'
+        default_currency = "USD"
+
+    date_match = re.search(date_regex, ocr_text)
     if date_match:
-        data["Date & Time"] = format_date(date_match.group(1))
+        try:
+            parsed_date = parser.parse(date_match.group(1), dayfirst=True)
+            date = parsed_date.strftime("%d.%m.%Y")
+        except:
+            date = date_match.group(1)
 
-    subtotal_match = re.search(config["subtotal_regex"], ocr_text, re.IGNORECASE)
-    tip_match = re.search(config["tip_regex"], ocr_text, re.IGNORECASE)
-    total_match = re.search(config["total_regex"], ocr_text, re.IGNORECASE)
+    total_match = re.search(total_regex, ocr_text, re.IGNORECASE)
+    if total_match:
+        amount = total_match.group(2).replace(",", ".")
+        currency = total_match.group(3) or default_currency
+        total = f"{amount} {currency}"
+    elif language == "bulgarian":
+        for i, line in enumerate(lines):
+            line_clean = line.lower()
+            if "обща сума" in line_clean or "обша сума" in line_clean:  
+                next_line = lines[i+1] if i+1 < len(lines) else ""
+                combined = line + " " + next_line
 
-    subtotal = float(subtotal_match.group(1).replace(',', '.')) if subtotal_match else None
-    tip = float(tip_match.group(1).replace(',', '.')) if tip_match else None
-    total_price = float(total_match.group(1).replace(',', '.')) if total_match else None
+                match = re.search(r'([\d,.]+)\s*(лв|bgn)?', combined.lower())
+                if match:
+                    amount = match.group(1).replace(",", ".")
+                    currency = match.group(2) or default_currency
+                    total = f"{amount} {currency.upper()}"
+                    break
 
-    print(subtotal, tip, total_price)
+    if not total:
+        return { "error": "No total found. Please retake the image." }
 
-    if tip is not None:
-        if total_price == subtotal and tip > 0:
-            total_price = None
-    elif total_price == subtotal:
-        subtotal = None
+    bad_keywords = ["court", "drive", "square", "ny", "cambridge", "zip", "tax", "routing", "terms", "receipt", "total", "date", "bank", "paypal", "email"]
+    item_pattern = re.compile(r'^(\d+)\s+(.*?)\s+([\d,\.]+)\s+([\d,\.]+)$')
 
-    if subtotal is None and tip is None and total_price is None:
-        return json.dumps({"error": "No subtotal, tip, or total found. This might not be a valid receipt."}, indent=4)
+    for line in lines:
+        line_lower = line.lower()
+        if any(bad in line_lower for bad in bad_keywords):
+            continue
 
-    if subtotal is not None and total_price is not None and tip is None:
-        tip = round(total_price - subtotal, 2) 
-    elif tip is not None and total_price is not None and subtotal is None:
-        subtotal = round(total_price - tip, 2)  
-    elif subtotal is not None and tip is not None and total_price is None:
-        total_price = round(subtotal + tip, 2) 
+        match = item_pattern.match(line)
+        if match:
+            qty = int(match.group(1))
+            name = match.group(2).strip()
+            unit_price = float(match.group(3).replace(",", "."))
+            # total_price_from_line = float(match.group(4).replace(",", "."))  # Optional
+            total_price = round(qty * unit_price, 2)
+            if name and len(name) > 2:
+                items.append({
+                    "name": name,
+                    "price": f"{total_price:.2f} {default_currency}"
+                })
 
-    if total_price is not None and subtotal is None and tip is None:
-        data["Total Price"] = total_price
-        return json.dumps(data, indent=4)
+    for line in lines:
+        if len(line) > 3 and not any(char.isdigit() for char in line):
+            store_name = line.strip()
+            break
 
-    if tip is None:
-        return json.dumps({"error": "Unable to calculate Tip. Receipt might be incomplete."}, indent=4)
+    result = {}
+    if date:
+        result["receipt_date"] = date
+    if store_name:
+        result["store_name"] = store_name
+    if items:
+        result["items"] = items
+    result["total"] = total
 
-    data["Subtotal"] = subtotal
-    data["Tip"] = tip
-    data["Total Price"] = total_price
+    return result
 
-    return json.dumps(data, indent=4)
-
-print(extract_receipt_data(extracted_text))
+structured = extract_structured_data(extracted_text, language_choice)
+print(json.dumps(structured, indent=4, ensure_ascii=False))
