@@ -1,19 +1,19 @@
-import numpy as np
-import cv2
 import os
 import imutils
-from imutils.perspective import four_point_transform
 import pytesseract
 import re
 import json
 from dateutil import parser
+from imutils.perspective import four_point_transform
+import numpy as np
+import cv2
 
-#Filter
+#Language select
 os.environ["QT_QPA_PLATFORM"] = "offscreen"  
 
 print("1 - English")
 print("2 - Bulgarian")
-
+'''
 while True:
     try:
         choice = int(input("Enter choice (1 or 2): ").strip())
@@ -23,7 +23,8 @@ while True:
             print("Invalid choice. Please enter 1 or 2.")
     except ValueError:
         print("Invalid input. Please enter a number (1 or 2).")
-
+'''
+choice=1
 if (choice == 1): 
     language_choice = "english"    
 elif(choice==2):
@@ -49,18 +50,25 @@ def set_language_config(language):
 
 config = set_language_config(language_choice)
 
-# Image Processing
-
 image = cv2.imread('./testimages/testimage4.jpeg')
+
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
+ 
+blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+ 
+thresh = cv2.adaptiveThreshold(
+    blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+ 
+ #do tuk - kopirah tiq neshta 2 puti shtoto nz kak ne bachkaha purviq put
+ 
 kernel = np.ones((5, 5), np.uint8)
-thresh = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel)
-
+thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+ 
 contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+ 
 contours = sorted(contours, key=cv2.contourArea, reverse=True)
 screen_contour = None
-
+ 
 for contour in contours:
     peri = cv2.arcLength(contour, True)
     approx = cv2.approxPolyDP(contour, 0.02 * peri, True)
@@ -69,19 +77,28 @@ for contour in contours:
         screen_contour = approx
         break
 
-debug_image = thresh.copy()
-cv2.drawContours(debug_image, [screen_contour], -1, (0, 255, 0), 2)
+if screen_contour is not None:
+    debug_image = image.copy()
+    cv2.drawContours(debug_image, [screen_contour], -1, (0, 255, 0), 2)
+    cv2.imwrite("debug_contour.jpg", debug_image)
 
-filtered = four_point_transform(thresh, screen_contour.reshape(4, 2))
-cv2.imwrite("imagefiltered.jpg", filtered)
+    # Apply perspective transform to "rotate" and crop the receipt.
+    warped = four_point_transform(image, screen_contour.reshape(4, 2))
+    
+    cv2.imwrite("warped_perspective.jpg", warped)
+    print("Perspective transformation completed successfully!")
+else:
+    print("No rectangular contour found.")
 
-inverted_filtered = cv2.bitwise_not(filtered)
+
+#Text from Image Scanner
+
+import pytesseract
+
+inverted_filtered = cv2.bitwise_not(warped)
 resized = cv2.resize(inverted_filtered, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-
-#Image to text
-
-custom_config = r'--oem 3 --psm 6'
-extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang=config["ocr_lang"])
+custom_config = r'--oem 3 --psm 6'  # OCR Engine Mode 3, Page Segmentation Mode 6 
+extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang="eng")
 
 #Extracting from text
 
