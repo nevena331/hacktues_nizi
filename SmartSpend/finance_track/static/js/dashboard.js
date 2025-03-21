@@ -7,22 +7,23 @@ document.addEventListener("DOMContentLoaded", function () {
     let chartInstance = null;
 
     summaryBtn.addEventListener("click", function () {
-        const income = 5400;
-        const expenses = 3200;
-        const balance = income - expenses;
+        const expenseCategories = ["Food & Beverage", "Transportation", "Groceries", "Healthcare", "Utilities", "Other"];
+        const expenseValues = [800, 600, 700, 500, 400, 200]; 
+
+        const totalExpenses = expenseValues.reduce((acc, val) => acc + val, 0);
 
         if (chartInstance) {
             chartInstance.destroy();
         }
-       
+
         chartInstance = new Chart(ctx, {
             type: "doughnut",
             data: {
-                labels: ["Income", "Expenses"],
-                datasets: [
+                labels: expenseCategories,
+                datasets:[
                     {
-                        data: [income, expenses],
-                        backgroundColor: ["#28a745", "#dc3545"],
+                        data: expenseValues,
+                        backgroundColor: ["#dc3545", "#fd7e14", "#ffc107", "#17a2b8", "#6610f2", "#6c757d"],
                     },
                 ],
             },
@@ -32,14 +33,18 @@ document.addEventListener("DOMContentLoaded", function () {
             },
         });
 
-        tableBody.innerHTML = `
+        let tableHTML = `
             <tr>
-                <td>$${income.toLocaleString()}</td>
-                <td>$${expenses.toLocaleString()}</td>
-                <td class="${balance >= 0 ? 'text-success' : 'text-danger'}">$${balance.toLocaleString()}</td>
+                <td>
+                    <ul>
+                        ${expenseCategories.map((category, index) => `<li>${category}: $${expenseValues[index].toLocaleString()}</li>`).join("")}
+                    </ul>
+                </td>
+                <td class="text-danger">$${totalExpenses.toLocaleString()}</td>
             </tr>
         `;
 
+        tableBody.innerHTML = tableHTML;
         summaryTable.style.display = "table";
     });
 });
