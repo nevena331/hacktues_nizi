@@ -124,55 +124,90 @@ def format_date(date_str):
         return parsed_date.strftime("%d.%m.%Y") 
     except ValueError:
         return None
+    
 
-def extract_receipt_data(ocr_text):
-    data = {}
-    lines = ocr_text.strip().split("\n")
-    if not lines:
-        return json.dumps({"error": "No text found in the image."}, indent=4)
-    data["Store Name"] = lines[0].strip()
 
-    date_match = re.search(config["date_regex"], ocr_text)
+def extract_structured_data(ocr_text, language):
+
+    lines = [line.strip() for line in ocr_text.split("\n") if line.strip()]
+    items = []
+    date = None
+    total = None
+    store_name = None
+
+    # Fix common OCR errors
+    ocr_text = ocr_text.replace("USDS", "USD").replace("USD$", "USD").replace("oad", "00")
+
+    # Language-specific config
+    if language == "bulgarian":
+        total_regex = r'(общо|обща сума)[:\s]*([\d,\.]+)\s*(лв|BGN)?'
+        date_regex = r'(\d{2}[./-]\d{2}[./-]\d{4})'
+        default_currency = "BGN"
+    else:
+        # Exclude "sub total" and only match "total"
+        total_regex = r'(?<!sub\s)(?<!subtotal\s)(total|receipt total)[^\d]{0,10}([\d,\.]+)\s*(USD|\$)?'
+        date_regex = r'(\d{2}/\d{2}/\d{4})'
+        default_currency = "USD"
+
+    # --- Extract date ---
+    date_match = re.search(date_regex, ocr_text)
     if date_match:
-        data["Date & Time"] = format_date(date_match.group(1))
+        try:
+            parsed_date = parser.parse(date_match.group(1), dayfirst=True)
+            date = parsed_date.strftime("%d.%m.%Y")
+        except:
+            date = date_match.group(1)
 
-    subtotal_match = re.search(config["subtotal_regex"], ocr_text, re.IGNORECASE)
-    tip_match = re.search(config["tip_regex"], ocr_text, re.IGNORECASE)
-    total_match = re.search(config["total_regex"], ocr_text, re.IGNORECASE)
+    # --- Extract total ---
+    total_match = re.search(total_regex, ocr_text, re.IGNORECASE)
+    if total_match:
+        amount = total_match.group(2).replace(",", ".")
+        currency = total_match.group(3) or default_currency
+        total = f"{amount} {currency}"
 
-    subtotal = float(subtotal_match.group(1).replace(',', '.')) if subtotal_match else None
-    tip = float(tip_match.group(1).replace(',', '.')) if tip_match else None
-    total_price = float(total_match.group(1).replace(',', '.')) if total_match else None
+    # --- Exit early if no total ---
+    if not total:
+        return { "error": "❌ No total found. Please retake the image." }
 
-    print(subtotal, tip, total_price)
+    # --- Extract items (line matching logic) ---
+    bad_keywords = ["court", "drive", "square", "ny", "cambridge", "zip", "tax", "routing", "terms", "receipt", "total", "date", "bank", "paypal", "email"]
+    item_pattern = re.compile(r'^(\d+)\s+(.*?)\s+([\d,\.]+)\s+([\d,\.]+)$')
 
-    if tip is not None:
-        if total_price == subtotal and tip > 0:
-            total_price = None
-    elif total_price == subtotal:
-        subtotal = None
+    for line in lines:
+        line_lower = line.lower()
+        if any(bad in line_lower for bad in bad_keywords):
+            continue
 
-    if subtotal is None and tip is None and total_price is None:
-        return json.dumps({"error": "No subtotal, tip, or total found. This might not be a valid receipt."}, indent=4)
+        match = item_pattern.match(line)
+        if match:
+            qty = int(match.group(1))
+            name = match.group(2).strip()
+            unit_price = float(match.group(3).replace(",", "."))
+            # total_price_from_line = float(match.group(4).replace(",", "."))  # Optional
+            total_price = round(qty * unit_price, 2)
+            if name and len(name) > 2:
+                items.append({
+                    "name": name,
+                    "price": f"{total_price:.2f} {default_currency}"
+                })
 
-    if subtotal is not None and total_price is not None and tip is None:
-        tip = round(total_price - subtotal, 2) 
-    elif tip is not None and total_price is not None and subtotal is None:
-        subtotal = round(total_price - tip, 2)  
-    elif subtotal is not None and tip is not None and total_price is None:
-        total_price = round(subtotal + tip, 2) 
+    # --- Fallback: store name = first line without digits ---
+    for line in lines:
+        if len(line) > 3 and not any(char.isdigit() for char in line):
+            store_name = line.strip()
+            break
 
-    if total_price is not None and subtotal is None and tip is None:
-        data["Total Price"] = total_price
-        return json.dumps(data, indent=4)
+    # --- Build JSON ---
+    result = {}
+    if date:
+        result["receipt_date"] = date
+    if store_name:
+        result["store_name"] = store_name
+    if items:
+        result["items"] = items
+    result["total"] = total
 
-    if tip is None:
-        return json.dumps({"error": "Unable to calculate Tip. Receipt might be incomplete."}, indent=4)
+    return result
 
-    data["Subtotal"] = subtotal
-    data["Tip"] = tip
-    data["Total Price"] = total_price
-
-    return json.dumps(data, indent=4)
-
-print(extract_receipt_data(extracted_text))
+structured = extract_structured_data(extracted_text, language_choice)
+print(json.dumps(structured, indent=4, ensure_ascii=False))
