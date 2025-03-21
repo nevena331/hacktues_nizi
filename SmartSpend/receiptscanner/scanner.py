@@ -13,7 +13,7 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 #1 - English
 #2 - Bulgarian
-choice = 2
+choice = 1
 if choice == 1: 
     language_choice = "english"    
 elif choice == 2:
@@ -39,7 +39,7 @@ def set_language_config(language):
 
 config = set_language_config(language_choice)
 
-image = cv2.imread('./testimages/testimage12.jpg')
+image = cv2.imread('./testimages/testimage4.jpeg')
 if image is None:
     print("Error: Image not loaded. Check your file path.")
     exit(1)
@@ -85,9 +85,7 @@ if not use_full_image and screen_contour is not None:
 
     warped = four_point_transform(image, screen_contour.reshape(4, 2))
     cv2.imwrite("warped_perspective.jpg", warped)
-    print("Perspective transformation completed successfully!")
 else:
-    print("Using full image without transformation.")
     warped = image.copy()
 
 #Debug
@@ -227,5 +225,36 @@ def extract_structured_data(ocr_text, language):
     return result
 
 structured = extract_structured_data(extracted_text, language_choice)
+from datetime import datetime
+import uuid
 
-print(json.dumps(structured, indent=4, ensure_ascii=False))
+def build_final_json(structured_data):
+    if "error" in structured_data:
+        return {"error": structured_data["error"]}
+
+    receipt_id = "rcpt_" + str(uuid.uuid4().hex[:6])
+    store_name = structured_data.get("store_name", "")
+    amount_str = structured_data.get("total", "0 USD").split()[0]
+    amount = round(float(amount_str.replace(",", ".")), 2)
+
+    date_str = structured_data.get("receipt_date", "")
+    try:
+        date_obj = parser.parse(date_str, dayfirst=True)
+        datetime_iso = date_obj.strftime("%Y-%m-%dT%H:%M:%SZ")  # You can add actual time if available
+    except:
+        datetime_iso = ""
+
+    return {
+        "receipt_id": None,
+        "description": f"Purchase at {store_name}" if store_name else "Receipt purchase",
+        "amount": amount,
+        "datetime": datetime_iso,
+        "transaction_type": None,
+        "category": None,
+        "source": "receipt"
+    }
+
+structured = extract_structured_data(extracted_text, language_choice)
+final_json = build_final_json(structured)
+print(json.dumps(final_json, indent=4))
+
