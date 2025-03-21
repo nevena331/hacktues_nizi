@@ -14,11 +14,11 @@ from .models import Receipt
 
 def receipt_detail(request, receipt_id):
     receipt = get_object_or_404(Receipt, id=receipt_id)
-    return render(request, "/finance_track/receipt_detail.html", {"receipt": receipt})
+    return render(request, "finance_track/receipt_detail.html", {"receipt": receipt})
 
 
 def frontpage(request):
-    return render(request, '/finance_track/frontpage.html')
+    return render(request, 'finance_track/frontpage.html')
 
 def process_receipt(request, receipt_id):
     receipt = get_object_or_404(Receipt, id=receipt_id)
@@ -36,7 +36,7 @@ def process_receipt(request, receipt_id):
             description="Auto-created from receipt scan",
             source="receipt"
         )
-    return render(request, "/finance_track/receipt_details.html", {"receipt": receipt})
+    return render(request, "finance_track/receipt_detail.html", {"receipt": receipt})
 
 
 
@@ -95,9 +95,6 @@ def get_accounts(request, access_token):
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     return response.json()
-def frontpage(request):
-    return render(request, "frontpage.html")
-
 
 def get_transactions(access_token, request, account_id):
     """Retrieve transactions for a given account."""
