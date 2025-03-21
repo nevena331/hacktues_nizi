@@ -1,26 +1,22 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Receipt Details</title>
-    <!-- Optional: Include a CSS framework for styling -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
-    <style>
-        body {
-            margin: 2rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Receipt Details</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+  <link rel="stylesheet" href="{% static 'css/receipt_detail.css' %}">
 </head>
 <body>
-    <div class="container">
-        <h1>Receipt Details</h1>
-        <hr>
-        <p><strong>User:</strong> {{ receipt.user.email }}</p>
-        <p><strong>Scanned Text:</strong> {{ receipt.scanned_text }}</p>
-        <p><strong>Predicted Category:</strong> {{ receipt.predicted_category }}</p>
-        <p><strong>Predicted Amount:</strong> {{ receipt.predicted_amount }}</p>
-        <p><strong>Date Scanned:</strong> {{ receipt.date_scanned|date:"Y-m-d H:i" }}</p>
-        <p><strong>Processed:</strong> {{ receipt.processed }}</p>
-    </div>
+  <div class="container">
+    <h1>Receipt Details</h1>
+    <hr>
+    <p><strong>User:</strong> {{ receipt.user.email }}</p>
+    <p><strong>Scanned Text:</strong> {{ receipt.scanned_text }}</p>
+    <p><strong>Predicted Category:</strong> {{ receipt.predicted_category }}</p>
+    <p><strong>Predicted Amount:</strong> {{ receipt.predicted_amount }}</p>
+    <p><strong>Date Scanned:</strong> {{ receipt.date_scanned|date:"Y-m-d H:i" }}</p>
+    <p><strong>Processed:</strong> {{ receipt.processed }}</p>
+  </div>
 </body>
 </html>

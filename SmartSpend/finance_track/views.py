@@ -106,6 +106,7 @@ def dashboard(request):
     return render(request, 'finance_track/dashboard.html', context)
 
 def transactions_page(request):
+    transactions = Transaction.objects.filter(user=request.user) if request.user.is_authenticated else []
     context = {'page_title': 'Transactions'}
     return render(request, 'finance_track/transactions.html', context)
 

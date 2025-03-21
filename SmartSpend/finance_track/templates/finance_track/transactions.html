@@ -1,55 +1,84 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transactions</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../../static/css/transactions.css">
-    <link rel="icon" type="image/png" href="favicon-3-modified.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transactions</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/transactions.css' %}">
+  <link rel="icon" type="image/png" href="{% static 'images/favicon-3-modified.png' %}">
 </head>
 <body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{% url 'finance_track:dashboard' %}">SmartSpend</a>
+    <ul class="navbar-nav">
+      <li class="nav-item"><a class="nav-link" href="{% url 'finance_track:dashboard' %}"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'finance_track:transactions' %}"><i class="fas fa-wallet"></i> Transactions</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'finance_track:add_expense' %}"><i class="fas fa-cog"></i> Add expense</a></li>
+    </ul>
+  </nav>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id = navbar-unsigned>
-        <a class="navbar-brand" href="#">SmartSpend</a>
-        
-        <ul>
-            <li><a class="nav-list-element" href="./dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a class="nav-list-element" href="./transactions.html"><i class="fas fa-wallet"></i> Transactions</a></li>
-            <li><a class="nav-list-element" href="./add_expense.html"><i class="fas fa-cog"></i> Add expense</a></li> 
-        </ul>
-    </nav>
+  <div class="container mt-4">
+    <h2 class="mb-4">Transactions</h2>
+    <button class="btn btn-secondary mb-3" onclick="toggleForm()">Add Manual Entry</button>
+    <button class="btn btn-secondary mb-3" onclick="toggleFileUpload()">Upload Receipt Image</button>
+    
+    <form id="transaction-form" style="display: none;">
+      <div class="row">
+        <div class="col-md-3">
+          <input type="date" class="form-control" id="date">
+        </div>
+        <div class="col-md-3">
+          <input type="text" class="form-control" id="description" placeholder="Description">
+        </div>
+        <div class="col-md-2">
+          <input type="number" class="form-control" id="amount" placeholder="Amount">
+        </div>
+        <div class="col-md-2">
+          <select class="form-control" id="type">
+            <option value="Income">Income</option>
+            <option value="Expense">Expense</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary">Add</button>
+        </div>
+      </div>
+    </form>
 
-    <div class="container mt-4">
-        <h2 class="mb-4">Transactions</h2>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                    <th>Type</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>March 15, 2025</td>
-                    <td>Salary</td>
-                    <td>$5,000</td>
-                    <td class="text-success">Income</td>
-                </tr>
-                <tr>
-                    <td>March 16, 2025</td>
-                    <td>Rent</td>
-                    <td>$1,500</td>
-                    <td class="text-danger">Expense</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <form id="file-upload-form" style="display: none;" class="mt-3">
+      <input type="file" class="form-control" id="receipt-image">
+    </form>
+    
+    <table class="table table-striped mt-4">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody id="transaction-table">
+        <tr>
+          <td>March 15, 2025</td>
+          <td>Salary</td>
+          <td>$5,000</td>
+          <td class="text-success">Income</td>
+        </tr>
+        <tr>
+          <td>March 16, 2025</td>
+          <td>Rent</td>
+          <td>$1,500</td>
+          <td class="text-danger">Expense</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="./transactions.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/transactions.js' %}"></script>
 </body>
 </html>

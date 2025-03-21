@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,21 +7,19 @@
     <title>Welcome - SmartSpend</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../../static/css/homepage.css">
-    <link rel="icon" type="image/png" href="../../static/images/favicon-3-modified.png">
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/favicon-3-modified.png' %}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id = navbar-unsigned>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="navbar-unsigned">
         <a class="navbar-brand" href="#">SmartSpend</a>
-        
         <div class="welcome">
             <h1>Welcome to SmartSpend</h1>
             <p class="lead">Manage your finances effortlessly.</p>
         </div>
-
         <div id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="login.html">Login or Sign up</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'finance_track:login' %}">Login or Sign up</a></li>
             </ul>
         </div>
     </nav>
@@ -66,7 +65,6 @@
                 <p>Monitor every transaction with detailed charts and reports.</p>
             </div>
         </div>
-
         <div class="row justify-content-center mt-4">
             <div class="col-md-4">
                 <i class="fas fa-check-circle fa-4x text-primary"></i>
@@ -82,7 +80,7 @@
     </section>
 
     <section class="text-center mt-5">
-        <a href="login.html" class="get-started-button">Get Started</a>
+        <a href="{% url 'finance_track:login' %}" class="get-started-button">Get Started</a>
     </section>
 
     <footer class="bg-dark text-white text-center py-3 mt-5">
@@ -91,4 +89,4 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+</html>
