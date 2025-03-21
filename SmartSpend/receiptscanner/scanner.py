@@ -8,27 +8,16 @@ from imutils.perspective import four_point_transform
 import numpy as np
 import cv2
 
-#Language select
+
 os.environ["QT_QPA_PLATFORM"] = "offscreen"  
 
-print("1 - English")
-print("2 - Bulgarian")
-'''
-while True:
-    try:
-        choice = int(input("Enter choice (1 or 2): ").strip())
-        if choice in [1, 2]:
-            break
-        else:
-            print("Invalid choice. Please enter 1 or 2.")
-    except ValueError:
-        print("Invalid input. Please enter a number (1 or 2).")
-'''
-choice=1
-if (choice == 1): 
+#1 - English
+#2 - Bulgarian
+choice = 2
+if choice == 1: 
     language_choice = "english"    
-elif(choice==2):
-    language_choice="bulgarian"
+elif choice == 2:
+    language_choice = "bulgarian"
 
 def set_language_config(language):
     if language == "bulgarian":
@@ -50,58 +39,85 @@ def set_language_config(language):
 
 config = set_language_config(language_choice)
 
-image = cv2.imread('./testimages/testimage4.jpeg')
+image = cv2.imread('./testimages/testimage7.jpg')
+if image is None:
+    print("Error: Image not loaded. Check your file path.")
+    exit(1)
 
+#Preprocessing
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
- 
 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
- 
 thresh = cv2.adaptiveThreshold(
     blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
- 
- #do tuk - kopirah tiq neshta 2 puti shtoto nz kak ne bachkaha purviq put
- 
+
 kernel = np.ones((5, 5), np.uint8)
 thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
- 
+
 contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
- 
 contours = sorted(contours, key=cv2.contourArea, reverse=True)
+
 screen_contour = None
- 
+img_area = image.shape[0] * image.shape[1]
+min_area_threshold = img_area * 0.4  # 0.4=40% ot snimkata, tova moje da se smenq svobodno
+valid_contours = []
+
 for contour in contours:
     peri = cv2.arcLength(contour, True)
     approx = cv2.approxPolyDP(contour, 0.02 * peri, True)
+    if len(approx) == 4:
+        area = cv2.contourArea(approx)
+        if area >= min_area_threshold:
+            valid_contours.append((approx, area))
 
-    if len(approx) == 4: 
-        screen_contour = approx
-        break
+if valid_contours:
+    screen_contour = max(valid_contours, key=lambda x: x[1])[0]
+else:
+    print("⚠️ No valid 4-point contour meeting area threshold found. Using rotated bounding box of the largest contour.")
+    if len(contours) > 0:
+        rect = cv2.minAreaRect(contours[0])
+        box = cv2.boxPoints(rect)
+        screen_contour = np.array(box, dtype="int")
+    else:
+        screen_contour = None
 
 if screen_contour is not None:
     debug_image = image.copy()
     cv2.drawContours(debug_image, [screen_contour], -1, (0, 255, 0), 2)
     cv2.imwrite("debug_contour.jpg", debug_image)
 
-    # Apply perspective transform to "rotate" and crop the receipt.
     warped = four_point_transform(image, screen_contour.reshape(4, 2))
-    
     cv2.imwrite("warped_perspective.jpg", warped)
     print("Perspective transformation completed successfully!")
 else:
     print("No rectangular contour found.")
+    warped = image.copy()  # fallback
 
-
-#Text from Image Scanner
+#Debug
+debug_all = image.copy()
+cv2.drawContours(debug_all, contours, -1, (0, 255, 0), 2)
+cv2.imwrite("debug_all_contours.jpg", debug_all)
 
 import pytesseract
 
+#Process image
 inverted_filtered = cv2.bitwise_not(warped)
 resized = cv2.resize(inverted_filtered, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-custom_config = r'--oem 3 --psm 6'  # OCR Engine Mode 3, Page Segmentation Mode 6 
-extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang="eng")
+custom_config = r'--oem 3 --psm 6'
+extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang=config["ocr_lang"])
 
-#Extracting from text
+if len(extracted_text.strip()) < 10:
+    print("Extracted text from warped image is insufficient. Trying the base image.")
+    base_extracted_text = pytesseract.image_to_string(image, config=custom_config, lang=config["ocr_lang"])
+    if len(base_extracted_text.strip()) < 10:
+        print("Error: The image does not contain enough text information. Please retake the image.")
+        extracted_text = ""
+    else:
+        extracted_text = base_extracted_text
 
+print("Extracted Text:")
+print(extracted_text)
+
+#Extracting Data from the Text 
 def format_date(date_str):
     try:
         parsed_date = parser.parse(date_str, dayfirst=True)  
@@ -111,8 +127,9 @@ def format_date(date_str):
 
 def extract_receipt_data(ocr_text):
     data = {}
-
     lines = ocr_text.strip().split("\n")
+    if not lines:
+        return json.dumps({"error": "No text found in the image."}, indent=4)
     data["Store Name"] = lines[0].strip()
 
     date_match = re.search(config["date_regex"], ocr_text)
@@ -140,10 +157,8 @@ def extract_receipt_data(ocr_text):
 
     if subtotal is not None and total_price is not None and tip is None:
         tip = round(total_price - subtotal, 2) 
-
     elif tip is not None and total_price is not None and subtotal is None:
         subtotal = round(total_price - tip, 2)  
-
     elif subtotal is not None and tip is not None and total_price is None:
         total_price = round(subtotal + tip, 2) 
 
