@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     summaryBtn.addEventListener("click", function () {
         const labels = ["Day 5", "Day 10", "Day 15", "Day 20", "Day 25", "Day 30"];
-        const datapoints = [3100, 2600, 3000, 2500, 2000, 4500];
+        const datapoints = [3100, 2600, 3000, -500, 2000, -1000]; 
 
         if (incomeChartInstance) {
             incomeChartInstance.destroy();
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
             datasets: [{
                 label: 'Income',
                 data: datapoints,
-                borderColor: 'rgba(75, 192, 192, 1)',
+                borderColor: 'rgba(75, 192, 192, 1)', 
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderWidth: 2,
                 pointRadius: 6,
@@ -65,7 +65,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 pointHoverBackgroundColor: 'rgba(255, 99, 132, 1)',
                 pointHoverBorderColor: '#fff',
                 cubicInterpolationMode: 'monotone',
-                tension: 0.4
+                tension: 0.4,
+                segment: {
+                    borderColor: ctx => {
+                        const index = ctx.p1DataIndex; 
+                        return datapoints[index] < 0 ? 'rgba(255, 0, 0, 1)' : 'rgba(75, 192, 192, 1)';
+                    }
+                }
             }]
         };
 
@@ -96,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             display: true,
                             text: 'Value'
                         },
-                        suggestedMin: -10,
+                        suggestedMin: -1000,
                         suggestedMax: 5000
                     }
                 },
