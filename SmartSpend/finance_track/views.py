@@ -17,9 +17,6 @@ def receipt_detail(request, receipt_id):
     return render(request, "finance_track/receipt_detail.html", {"receipt": receipt})
 
 
-def frontpage(request):
-    return render(request, 'finance_track/frontpage.html')
-
 def process_receipt(request, receipt_id):
     receipt = get_object_or_404(Receipt, id=receipt_id)
     if receipt.scanned_text and not receipt.processed:
@@ -129,3 +126,47 @@ def transactions_view(request):
     # Render the transactions in a template
     #return render(request, "transactions.html", {"transactions_all": transactions_all})
     print(transactions_all)
+
+
+def homepage(request):
+    """
+    Renders the homepage.
+    """
+    context = {'page_title': 'HomePage'}
+    return render(request, 'homepage.html', context)
+def dashboard(request):
+    """
+    Renders the Dashboard.
+    """
+    context = {'page_title': 'Dashboard'}
+    return render(request, 'dashboard.html', context)
+def transactions(request):
+    """
+    Renders the Transactions.
+    """
+    context = {'page_title': 'Transactions'}
+    return render(request, 'transactions.html', context)
+def receipt_detail(request):
+    """
+    Renders the receipt_detail.
+    """
+    context = {'page_title': 'Receipt Detail'}
+    return render(request, 'receipt_detail.html', context)
+def receipt_results(request):
+    """
+    Renders the receipt_results.
+    """
+    context = {'page_title': 'Receipt Results'}
+    return render(request, 'receipt_results.html', context)
+def add_expense(request):
+    """
+    Renders the add_expense.
+    """
+    context = {'page_title': 'Add Expense'}
+    return render(request, 'add_expense.html', context)
+def auth(request):
+    """
+    Renders the auth.
+    """
+    context = {'page_title': 'Authentification'}
+    return render(request, 'auth.html', context)
