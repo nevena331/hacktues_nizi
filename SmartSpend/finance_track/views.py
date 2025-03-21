@@ -40,10 +40,6 @@ def test(request):
 
 @require_http_methods(["GET", "POST"])
 def truelayer_callback(request):
-    """
-    Handles the callback from TrueLayer after user consent.
-    Extracts the authorization code and exchanges it for an access token.
-    """
     auth_code = request.POST.get('code') or request.GET.get('code')
     state = request.POST.get('state') or request.GET.get('state')  # Optional: validate state if used
 
@@ -66,12 +62,11 @@ def truelayer_callback(request):
         )
 
     token_data = token_response.json()
-    # For demonstration, store tokens in the session (for production, use secure storage)
+    # Store tokens in session (for demo purposes)
     request.session['access_token'] = token_data.get('access_token')
     request.session['refresh_token'] = token_data.get('refresh_token')
     request.session['expires_in'] = token_data.get('expires_in')
 
-    print(f"Token data: {token_data}")
     return JsonResponse(token_data)
 
 
@@ -83,3 +78,21 @@ def connect_truelayer(request):
     auth_url = get_truelayer_auth_url()
     # Redirect the user to TrueLayer's authentication dialog
     return redirect(auth_url)
+
+
+from .utils import get_client_ip
+
+def get_accounts(request, access_token):
+    """
+    Retrieves user account data from TrueLayer Data API,
+    including the end-user's IP address to avoid rate limits.
+    """
+    user_ip = get_client_ip(request)
+    url = "https://api.truelayer-sandbox.com/data/v1/accounts"  # Use sandbox URL; update if live.
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "X-PSU-IP": user_ip,
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.json()

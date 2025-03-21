@@ -23,3 +23,15 @@ def get_truelayer_auth_url():
     # Construct the URL with query parameters
     auth_url = f"{base_auth_url}?{urllib.parse.urlencode(params)}"
     return auth_url
+
+def get_client_ip(request):
+    """
+    Extracts the client's IP address from the Django request.
+    """
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        # In case of multiple IPs, take the first one
+        ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
