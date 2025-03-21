@@ -137,19 +137,6 @@ def register(request):
         form = RegistrationForm()
     return render(request, "finance_track/register.html", {"form": form})
 
-def login_view(request):
-    if request.method == "POST":
-        form = LoginForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect("finance_track:homepage")
-        else:
-            messages.error(request, "Invalid credentials.")
-    else:
-        form = LoginForm()
-    return render(request, 'accounts/login.html', {'form': form})
-
 def logout_view(request):
     logout(request)
     return redirect("finance_track:homepage")
