@@ -24,4 +24,4 @@ result = classifier(text, candidate_labels)
 
 # 6. Print the results
 print("Input text:", text)
-print("Classification result:", result)
+print("Classification result:", result['labels'][0])
