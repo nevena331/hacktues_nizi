@@ -3,7 +3,7 @@ from django.conf import settings
 import uuid
 
 def get_truelayer_auth_url():
-    base_auth_url = "https://auth.truelayer-sandbox.com/"
+    base_auth_url = "https://auth.truelayer-sandbox.com/?response_type=code&client_id=sandbox-smartspend-9f4cc6&scope=info%20accounts%20balance%20cards%20transactions%20direct_debits%20standing_orders%20offline_access&redirect_uri=http://127.0.0.1:5432/truelayer/callback&providers=uk-cs-mock%20uk-ob-all%20uk-oauth-all"
 
     # Generate a unique state token (in production, you may want to store and later validate this)
     state = str(uuid.uuid4())

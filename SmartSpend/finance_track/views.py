@@ -6,9 +6,19 @@ from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.conf import settings
 import requests
+from .utils import get_client_ip
+from django.shortcuts import redirect
+from .utils import get_truelayer_auth_url
+from django.shortcuts import get_object_or_404, render
+from .models import Receipt
+
+def receipt_detail(request, receipt_id):
+    receipt = get_object_or_404(Receipt, id=receipt_id)
+    return render(request, "/finance_track/receipt_detail.html", {"receipt": receipt})
+
 
 def frontpage(request):
-    return render(request, "frontpage.html")
+    return render(request, '/finance_track/frontpage.html')
 
 def process_receipt(request, receipt_id):
     receipt = get_object_or_404(Receipt, id=receipt_id)
@@ -26,7 +36,7 @@ def process_receipt(request, receipt_id):
             description="Auto-created from receipt scan",
             source="receipt"
         )
-    return render(request, "receipt_result.html", {"receipt": receipt})
+    return render(request, "/finance_track/receipt_details.html", {"receipt": receipt})
 
 
 
@@ -84,15 +94,12 @@ def truelayer_callback(request):
     return JsonResponse(token_data)
 
 
-from django.shortcuts import redirect
-from .utils import get_truelayer_auth_url
-
 def connect_truelayer(request):
     auth_url = get_truelayer_auth_url()
     return redirect(auth_url)
 
 
-from .utils import get_client_ip
+
 
 def get_accounts(request, access_token):
     """
