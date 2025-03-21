@@ -103,7 +103,6 @@ extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang
 
 
 if len(extracted_text.strip()) < 10:
-    print("Extracted text from warped image is insufficient. Trying the base image.")
     base_extracted_text = pytesseract.image_to_string(image, config=custom_config, lang=config["ocr_lang"])
     if len(base_extracted_text.strip()) < 10:
         print("Error: The image does not contain enough text information. Please retake the image.")
@@ -127,8 +126,6 @@ def clean_ocr_text(text, language):
 
 extracted_text = clean_ocr_text(extracted_text, language_choice)
 
-print("Extracted Text:")
-print(extracted_text)
 
 #Extracting Data from the Text 
 def format_date(date_str):
@@ -230,4 +227,5 @@ def extract_structured_data(ocr_text, language):
     return result
 
 structured = extract_structured_data(extracted_text, language_choice)
+
 print(json.dumps(structured, indent=4, ensure_ascii=False))
