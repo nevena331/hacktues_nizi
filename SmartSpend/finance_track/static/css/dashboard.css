@@ -3,6 +3,8 @@ body {
     background-color: #f8f9fa;
     margin: 0;
     padding: 0;
+    background: url("{% static 'images/everything_background.png' %}") no-repeat center center fixed;
+    background-size: cover;
 }
 
 #navbar-unsigned{
