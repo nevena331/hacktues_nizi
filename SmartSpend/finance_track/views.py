@@ -7,7 +7,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, logout, get_user_model, views as auth_views
+from django.contrib.auth import login, logout, get_user_model, views, authenticate
 
 from .models import Receipt, Transaction
 from .expense_classifier import classify_expense
@@ -122,6 +122,7 @@ def auth_page(request):
     context = {'page_title': 'Authentification'}
     return render(request, 'finance_track/auth.html', context)
 
+@require_http_methods(["GET", "POST"])
 def register_view(request):
     if request.method == 'POST':
         # Get parameters from the form
@@ -159,4 +160,4 @@ def register_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("finance_track:homepage")
+    return redirect("finance_track/homepage")
