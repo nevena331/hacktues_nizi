@@ -12,7 +12,7 @@ from django.contrib.auth import login, logout, get_user_model, views as auth_vie
 from .models import Receipt, Transaction
 from .expense_classifier import classify_expense
 from .utils import get_client_ip, get_truelayer_auth_url
-from .forms import RegistrationForm, RegisterForm, LoginForm
+from .forms import RegistrationForm
 
 User = get_user_model()
 

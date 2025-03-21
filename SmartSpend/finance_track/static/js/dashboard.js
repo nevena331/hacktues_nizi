@@ -184,3 +184,27 @@ document.addEventListener("DOMContentLoaded", function () {
         incomeLast5MonthsChartInstance = new Chart(ctxIncomeLast5Months, config);
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const summaryBtn = document.getElementById("summary-btn");
+    const chartsWrapper = document.querySelector(".charts-wrapper");
+    const chartContainers = document.querySelectorAll(".chart-container");
+
+    chartsWrapper.style.display = "none";
+
+    chartContainers.forEach(container => {
+        container.style.boxShadow = "none"; 
+        container.style.opacity = "0"; 
+        container.style.transition = "opacity 0.5s ease-in-out";
+    });
+
+    summaryBtn.addEventListener("click", function () {
+        chartsWrapper.style.display = "flex"; 
+        setTimeout(() => {
+            chartContainers.forEach(container => {
+                container.style.boxShadow = "0 0.625rem 1rem rgba(0, 0, 0, 0.1)"; 
+                container.style.opacity = "1"; 
+            });
+        }, 100); 
+    });
+});
