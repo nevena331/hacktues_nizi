@@ -12,3 +12,6 @@ def classify_expense(text):
     ]
     result = _model(text, candidate_labels)
     return result["labels"][0]
+
+classify_expense("Starbucks")
+
