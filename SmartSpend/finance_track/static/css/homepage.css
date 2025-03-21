@@ -64,6 +64,14 @@ section p {
     padding: 12px 25px;
 }
 
+.row {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+}
+
 footer {
     background: #343a40;
     color: white;
