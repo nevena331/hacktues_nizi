@@ -122,35 +122,39 @@ def auth_page(request):
     context = {'page_title': 'Authentification'}
     return render(request, 'finance_track/auth.html', context)
 
-def register(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-
-        # Check if a user with the provided username already exists
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "User with that username already exists.")
-            return render(request, "finance_track/register.html", {
-                "username": username,
-                "email": email,
-            })
-
-        # Optionally, check if a user with the provided email exists
+def register_view(request):
+    if request.method == 'POST':
+        # Get parameters from the form
+        first_name = request.POST.get("first_name", "").strip()
+        last_name  = request.POST.get("last_name", "").strip()
+        email      = request.POST.get("email", "").strip()
+        password   = request.POST.get("password", "").strip()
+        
+        # Validate required fields
+        if not first_name or not last_name or not email or not password:
+            messages.error(request, "All fields are required.")
+            return render(request, "finance_track/register.html")
+        
+        # Check if a user with this email already exists.
         if User.objects.filter(email=email).exists():
-            messages.error(request, "User with that email already exists.")
+            messages.error(request, "A user with that email already exists.")
             return render(request, "finance_track/register.html", {
-                "username": username,
+                "first_name": first_name,
+                "last_name": last_name,
                 "email": email,
             })
-
-        # Create and save the new user
-        user = User.objects.create_user(username=username, email=email, password=password)
+        
+        # Create the new user.
+        # Here, we use the email as the username.
+        user = User.objects.create_user(username=email, email=email, password=password)
+        user.first_name = first_name
+        user.last_name = last_name
         user.save()
-        messages.success(request, "Registration successful. You can now log in.")
-        return redirect("homepage")  # Replace "homepage" with your actual home page URL name if different
-
-    # For GET requests, simply render the registration form
+        
+        messages.success(request, "Registration successful. Please log in.")
+        return redirect('login')  # Update this URL name to match your login route.
+    
+    # For GET requests, simply display the registration form.
     return render(request, "finance_track/register.html")
 
 def logout_view(request):
