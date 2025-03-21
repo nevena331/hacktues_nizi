@@ -35,23 +35,6 @@ ul{
     text-decoration: none;
 }
 
-.login-signup{
-    background-color: rgba(0,0,0,0);
-    border-color: rgba(0,0,0,0);
-    display: inline;
-    color: white;
-    margin:0 3% 0 3%;
-    text-decoration: none;
-}
-
-.login-signup:hover{
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.login-signup:active{
-    text-decoration: none;
-}
 
 .container {
     max-width: 900px;
