@@ -7,7 +7,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, logout, get_user_model, views as auth_views
+from django.contrib.auth import login, logout, get_user_model, views, authenticate
 
 from .models import Receipt, Transaction
 from .expense_classifier import classify_expense
@@ -122,41 +122,46 @@ def auth_page(request):
     context = {'page_title': 'Authentification'}
     return render(request, 'finance_track/auth.html', context)
 
+@require_http_methods(["GET", "POST"])
 def register_view(request):
     if request.method == 'POST':
-        # Get parameters from the form
-        first_name = request.POST.get("first_name", "").strip()
-        last_name  = request.POST.get("last_name", "").strip()
-        email      = request.POST.get("email", "").strip()
-        password   = request.POST.get("password", "").strip()
-        
-        # Validate required fields
-        if not first_name or not last_name or not email or not password:
-            messages.error(request, "All fields are required.")
-            return render(request, "finance_track/register.html")
-        
-        # Check if a user with this email already exists.
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "A user with that email already exists.")
-            return render(request, "finance_track/register.html", {
-                "first_name": first_name,
-                "last_name": last_name,
-                "email": email,
-            })
-        
-        # Create the new user.
-        # Here, we use the email as the username.
-        user = User.objects.create_user(username=email, email=email, password=password)
-        user.first_name = first_name
-        user.last_name = last_name
-        user.save()
-        
-        messages.success(request, "Registration successful. Please log in.")
-        return redirect('login')  # Update this URL name to match your login route.
-    
-    # For GET requests, simply display the registration form.
-    return render(request, "finance_track/register.html")
+        # Option 1: If you're using a custom form (RegistrationForm) to validate input:
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            # Get cleaned data
+            first_name = form.cleaned_data.get('first_name')
+            last_name = form.cleaned_data.get('last_name')
+            email = form.cleaned_data.get('email')
+            password = form.cleaned_data.get('password1')
+            
+            # Check if a user with this email already exists
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "A user with that email already exists.")
+                return render(request, "finance_track/register.html", {"form": form})
+            
+            # Create new user
+            user = User.objects.create_user(username=email, email=email, password=password)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.save()
+            
+            # Authenticate and login the user automatically after registration
+            new_user = authenticate(request, username=email, password=password)
+            if new_user is not None:
+                login(request, new_user)
+                messages.success(request, "Registration successful. You are now logged in.")
+                return redirect('homepage')
+            else:
+                messages.success(request, "Registration successful. Please log in.")
+                return redirect('login')
+        else:
+            # If form is invalid, re-render with errors.
+            return render(request, "finance_track/register.html", {"form": form})
+    else:
+        # For GET request, create an empty form instance.
+        form = RegistrationForm()
+        return render(request, "finance_track/register.html", {"form": form})
 
 def logout_view(request):
     logout(request)
-    return redirect("finance_track:homepage")
+    return redirect("finance_track/homepage")
