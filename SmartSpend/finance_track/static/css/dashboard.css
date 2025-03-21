@@ -49,6 +49,10 @@ ul{
     font-weight: bold;
 }
 
+h2 {
+    text-align: center;
+}
+
 .card {
     background: #fff;
     border-radius: 10px;
@@ -76,7 +80,7 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.25rem;
+    gap: 1rem;
     flex-wrap: wrap; 
 }
 
@@ -89,6 +93,14 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
+    border-radius: 1rem;
+    box-shadow: 0 0.625rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.row {
+    display: flex;
+    justify-content: center;
+    text-align: center;
 }
 
 @media (max-width: 768px) {
