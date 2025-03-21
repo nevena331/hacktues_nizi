@@ -1,5 +1,5 @@
 import urllib.parse
-from django.conf import settings
+from SmartSpend.settings import *
 import uuid
 
 def get_truelayer_auth_url():
@@ -13,8 +13,8 @@ def get_truelayer_auth_url():
     # Define the query parameters for the auth URL
     params = {
         "response_type": "code",
-        "client_id":settings.TRUELAYER_CLIENT_ID,
-        "redirect_uri": settings.TRUELAYER_REDIRECT_URI,
+        "client_id": TRUELAYER_CLIENT_ID,
+        "redirect_uri": TRUELAYER_REDIRECT_URI,
         "scope": "accounts transactions balance offline_access",
         "state": state,
         "nonce": nonce,
