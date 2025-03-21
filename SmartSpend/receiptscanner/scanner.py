@@ -39,7 +39,7 @@ def set_language_config(language):
 
 config = set_language_config(language_choice)
 
-image = cv2.imread('./testimages/testimage7.jpg')
+image = cv2.imread('./testimages/testimage12.jpg')
 if image is None:
     print("Error: Image not loaded. Check your file path.")
     exit(1)
@@ -74,7 +74,7 @@ use_full_image = False
 if valid_contours:
     screen_contour = max(valid_contours, key=lambda x: x[1])[0]
 else:
-    print("⚠️ No valid 4-point contour meeting area threshold found. Using full image for OCR.")
+    print(" No valid 4-point contour meeting area threshold found. Using full image for OCR.")
     use_full_image = True
     screen_contour = None
 
@@ -85,9 +85,9 @@ if not use_full_image and screen_contour is not None:
 
     warped = four_point_transform(image, screen_contour.reshape(4, 2))
     cv2.imwrite("warped_perspective.jpg", warped)
-    print("✅ Perspective transformation completed successfully!")
+    print("Perspective transformation completed successfully!")
 else:
-    print("⚠️ Using full image without transformation.")
+    print("Using full image without transformation.")
     warped = image.copy()
 
 #Debug
@@ -95,13 +95,12 @@ debug_all = image.copy()
 cv2.drawContours(debug_all, contours, -1, (0, 255, 0), 2)
 cv2.imwrite("debug_all_contours.jpg", debug_all)
 
-import pytesseract
-
 #Process image
 inverted_filtered = cv2.bitwise_not(warped)
 resized = cv2.resize(inverted_filtered, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
 custom_config = r'--oem 3 --psm 6'
 extracted_text = pytesseract.image_to_string(resized, config=custom_config, lang=config["ocr_lang"])
+
 
 if len(extracted_text.strip()) < 10:
     print("Extracted text from warped image is insufficient. Trying the base image.")
@@ -124,6 +123,7 @@ def clean_ocr_text(text, language):
 
     cleaned_text = ''.join(char for char in text if char in allowed_chars or char.isspace())
     return cleaned_text
+
 
 extracted_text = clean_ocr_text(extracted_text, language_choice)
 
@@ -150,6 +150,8 @@ def extract_structured_data(ocr_text, language):
 
     #OCR errors
     ocr_text = ocr_text.replace("USDS", "USD").replace("USD$", "USD").replace("oad", "00")
+    if language == "bulgarian":
+        ocr_text = ocr_text.replace("счма", "сума")
 
     if language == "bulgarian":
         total_regex = r'(общо|обща сума)[:\s]*([\d,\.]+)\s*(лв|BGN)?'
@@ -168,7 +170,6 @@ def extract_structured_data(ocr_text, language):
         except:
             date = date_match.group(1)
 
-    # Try total match from regex
     total_match = re.search(total_regex, ocr_text, re.IGNORECASE)
     if total_match:
         amount = total_match.group(2).replace(",", ".")
@@ -187,9 +188,9 @@ def extract_structured_data(ocr_text, language):
                     currency = match.group(2) or default_currency
                     total = f"{amount} {currency.upper()}"
                     break
-                
+
     if not total:
-        return { "error": "❌ No total found. Please retake the image." }
+        return { "error": "No total found. Please retake the image." }
 
     bad_keywords = ["court", "drive", "square", "ny", "cambridge", "zip", "tax", "routing", "terms", "receipt", "total", "date", "bank", "paypal", "email"]
     item_pattern = re.compile(r'^(\d+)\s+(.*?)\s+([\d,\.]+)\s+([\d,\.]+)$')
