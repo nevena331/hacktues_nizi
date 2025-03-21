@@ -24,6 +24,7 @@
 
 - Python Django
 - CSS Bootstrap
+- Python OpenCV
 
 # Инсталация
 - Python библиотеки
