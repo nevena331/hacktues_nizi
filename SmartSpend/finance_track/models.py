@@ -15,14 +15,18 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_staff", True)
         return self.create_user(email, password, **extra_fields)
-
+        
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, validators=[EmailValidator("Enter a valid email address.")])
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
+    is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
+
     objects = UserManager()
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 

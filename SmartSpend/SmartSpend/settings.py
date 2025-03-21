@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv, find_dotenv
 
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
@@ -16,7 +17,7 @@ SECRET_KEY = 'django-insecure-+wm5&78q@d()k%5*3+wx%x#=h(n^2-thf3lqs%tz^#wst+)+yw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -28,7 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'finance_track'
+    'finance_track',
 ]
 
 MIDDLEWARE = [

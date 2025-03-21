@@ -1,18 +1,32 @@
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError, JsonResponse, HttpResponseBadRequest
-import requests
-# from SmartSpend.settings import REVOLUT_API_KEY
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse
+from .models import Receipt, Transaction
+from .expense_classifier import classify_expense
 from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.conf import settings
-
-# Create your views here.
+import requests
 
 def frontpage(request):
-    return render(request, "dashboard.html")
+    return render(request, "frontpage.html")
 
-def test(request):
-    return HttpResponse()
+def process_receipt(request, receipt_id):
+    receipt = get_object_or_404(Receipt, id=receipt_id)
+    if receipt.scanned_text and not receipt.processed:
+        category = classify_expense(receipt.scanned_text)
+        receipt.predicted_category = category
+        receipt.processed = True
+        receipt.save()
 
+        Transaction.objects.create(
+            user=receipt.user,
+            transaction_type="EXPENSE",
+            amount=receipt.predicted_amount if receipt.predicted_amount else 0,
+            category=category,
+            description="Auto-created from receipt scan",
+            source="receipt"
+        )
+    return render(request, "receipt_result.html", {"receipt": receipt})
 
 
 
@@ -74,9 +88,7 @@ from django.shortcuts import redirect
 from .utils import get_truelayer_auth_url
 
 def connect_truelayer(request):
-    # Generate the TrueLayer auth URL
     auth_url = get_truelayer_auth_url()
-    # Redirect the user to TrueLayer's authentication dialog
     return redirect(auth_url)
 
 
@@ -96,3 +108,5 @@ def get_accounts(request, access_token):
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     return response.json()
+def frontpage(request):
+    return render(request, "frontpage.html")
