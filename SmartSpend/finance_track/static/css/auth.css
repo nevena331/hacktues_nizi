@@ -15,7 +15,7 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
     align-items: center;
-    
+
     border-width: 1%;
     border-color: #150b27;
     border-style: solid;
@@ -30,7 +30,7 @@ body {
 }
 
 input {
-    
+
     width: 70%;
     padding: 5%;
     margin-top: 2%;
@@ -41,7 +41,7 @@ input {
     align-self: center;
     border-color: #cccccc;
 }
-
+     
 
 .login-button:hover{
     background-color: #26213f;
@@ -56,7 +56,7 @@ button {
     border-style: solid;
     border-bottom: #cccccc;
     border-top: #cccccc;
-    
+
 
     align-self: center;
     margin-top: 10%;

@@ -1,7 +1,6 @@
-body{
+body {
     font-family: Arial, Helvetica, sans-serif;
 }
-
 
 #navbar-unsigned{
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
@@ -31,35 +30,4 @@ ul{
     display: inline-block;
     color: white;
     text-decoration: none;
-}
-
-#login-signup{
-    margin-top: 20px;
-    margin:0 3% 0 3%;
-    display: inline;
-    color: white;
-}
-
-
-.sidebar {
-    width: 250px;
-    height: 100vh;
-    background: #2a2d3e;
-    color: white;
-    position: fixed;
-    padding: 20px;
-}
-.sidebar a {
-    color: white;
-    text-decoration: none;
-    display: block;
-    padding: 10px 0;
-}
-.sidebar a:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 5px;
-}
-.content {
-    margin-left: 270px;
-    padding: 20px;
 }

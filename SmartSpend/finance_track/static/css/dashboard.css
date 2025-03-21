@@ -1,12 +1,56 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: Arial, Arial, Helvetica, sans-serif;
     background-color: #f8f9fa;
     margin: 0;
     padding: 0;
 }
 
-.navbar {
+#navbar-unsigned{
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    background-color: #150b27;
+}
+
+.navbar-brand{
+    margin-top: 0;
+    margin-bottom: 0;  
+    margin-right: 3%;
+    margin-left: 3%;
+
+}
+
+ul{
+    margin-left:20%;
+    margin-right: 20%;
+    margin-top: 20px;
+    flex:1;
+    display: flex;
+    justify-content: space-around;
+}
+
+.nav-list-element{
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+}
+
+.login-signup{
+    background-color: rgba(0,0,0,0);
+    border-color: rgba(0,0,0,0);
+    display: inline;
+    color: white;
+    margin:0 3% 0 3%;
+    text-decoration: none;
+}
+
+.login-signup:hover{
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.login-signup:active{
+    text-decoration: none;
 }
 
 .container {
