@@ -37,17 +37,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const summaryBtn = document.getElementById("summary-btn");
-    const ctxIncome = document.getElementById("incomeChart").getContext("2d");
-    const incomeChartContainer = document.getElementById("incomeChartContainer");
+    const ctxIncome = document.getElementById("balanceChart").getContext("2d");
+    const balanceChartContainer = document.getElementById("balanceChartContainer");
 
-    let incomeChartInstance = null;
+    let balanceChartInstance = null;
 
     summaryBtn.addEventListener("click", function () {
         const labels = ["Day 5", "Day 10", "Day 15", "Day 20", "Day 25", "Day 30"];
         const datapoints = [3100, 2600, 3000, -500, 2000, -1000]; 
 
-        if (incomeChartInstance) {
-            incomeChartInstance.destroy();
+        if (balanceChartInstance) {
+            balanceChartInstance.destroy();
         }
 
         const data = {
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
         };
 
-        incomeChartInstance = new Chart(ctxIncome, config);
+        balanceChartInstance = new Chart(ctxIncome, config);
     });
 });
 
