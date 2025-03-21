@@ -13,7 +13,7 @@ os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 #1 - English
 #2 - Bulgarian
-choice = 2
+choice = 1
 if choice == 1: 
     language_choice = "english"    
 elif choice == 2:
@@ -39,7 +39,7 @@ def set_language_config(language):
 
 config = set_language_config(language_choice)
 
-image = cv2.imread('./testimages/testimage7.jpg')
+image = cv2.imread('./testimages/testimage4.jpeg')
 if image is None:
     print("Error: Image not loaded. Check your file path.")
     exit(1)
