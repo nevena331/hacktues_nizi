@@ -18,6 +18,6 @@ urlpatterns = [
     path("receipt/<int:receipt_id>/process/", process_receipt, name="process_receipt"),
     path('register/', views.register, name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='finance_track/login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='accounts/login/'), name='logout'),
     path('transactions/', views.transaction_list, name='transaction_list'),
 ]
