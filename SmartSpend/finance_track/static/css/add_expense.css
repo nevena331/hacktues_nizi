@@ -1,5 +1,7 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
+    background: url("{% static 'images/everything_background.png' %}") no-repeat center center fixed;
+    background-size: cover;
 }
 
 #navbar-unsigned{

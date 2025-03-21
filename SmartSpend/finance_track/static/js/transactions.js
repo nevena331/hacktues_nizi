@@ -46,16 +46,4 @@ function addTransaction() {
 
 function uploadReceipt() {
     const fileInput = document.getElementById("receipt-image");
-    const file = fileInput.files[0];
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const table = document.getElementById("transaction-table");
-            const lastRow = table.rows[table.rows.length - 1];
-            const cell = lastRow.cells[4];
-            cell.innerHTML = `<img src="${e.target.result}" alt="Receipt" width="50">`;
-        };
-        reader.readAsDataURL(file);
-    }
 }
