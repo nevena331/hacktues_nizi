@@ -124,19 +124,34 @@ def auth_page(request):
 
 def register(request):
     if request.method == "POST":
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data["password1"])
-            user.save()
-            login(request, user)
-            messages.success(request, "Registration successful.")
-            return redirect("finance_track:transaction_list")
-        else:
-            messages.error(request, "Please fix the errors below.")
-    else:
-        form = RegistrationForm()
-    return render(request, "finance_track/register.html", {"form": form})
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        # Check if a user with the provided username already exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "User with that username already exists.")
+            return render(request, "finance_track/register.html", {
+                "username": username,
+                "email": email,
+            })
+
+        # Optionally, check if a user with the provided email exists
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "User with that email already exists.")
+            return render(request, "finance_track/register.html", {
+                "username": username,
+                "email": email,
+            })
+
+        # Create and save the new user
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.save()
+        messages.success(request, "Registration successful. You can now log in.")
+        return redirect("homepage")  # Replace "homepage" with your actual home page URL name if different
+
+    # For GET requests, simply render the registration form
+    return render(request, "finance_track/register.html")
 
 def logout_view(request):
     logout(request)
