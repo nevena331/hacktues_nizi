@@ -1,0 +1,41 @@
+[
+    {
+        "model": "finance_track.transaction",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "transaction_type": "EXPENSE",
+            "amount": "3.50",
+            "category": "Food & Beverage",
+            "description": "Payment at Starbucks",
+            "date": "2025-03-21T10:06:00Z",
+            "source": "demo"
+        }
+    },
+    {
+        "model": "finance_track.transaction",
+        "pk": 2,
+        "fields": {
+            "user": 1,
+            "transaction_type": "INCOME",
+            "amount": "2000.00",
+            "category": "Income",
+            "description": "Salary Deposit",
+            "date": "2025-03-20T09:00:00Z",
+            "source": "demo"
+        }
+    },
+    {
+        "model": "finance_track.transaction",
+        "pk": 3,
+        "fields": {
+            "user": 1,
+            "transaction_type": "EXPENSE",
+            "amount": "120.75",
+            "category": "Groceries",
+            "description": "Grocery shopping at Whole Foods",
+            "date": "2025-03-19T17:30:00Z",
+            "source": "demo"
+        }
+    }
+]
