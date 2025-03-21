@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../static/css/login_register.css">
+    <link rel="icon" type="image/png" href="../../static/images/favicon-3-modified.png">
+    <script src="../../static/js/login_register.js"></script>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id = navbar-unsigned>
+        <a class="navbar-brand" href="./homepage.html">SmartSpend</a>
+        
+        <div class="welcome">
+            <h1>Welcome to SmartSpend</h1>
+            <p class="lead">Manage your finances effortlessly.</p>
+        </div>
+
+        <div id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="login.html">Login or Sign up</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class = "content">
+    <div class="auth-container">
+        <div class="form-box" id="register-box">
+            <h1>Register</h1>
+            <form method="POST" action="{% url 'register' %}">
+                <input type="text" name="first_name" placeholder="First Name" required>
+                <input type="text" name="last_name" placeholder="Last Name" required>
+                <input onfocus= "togglePlaceholder(this)" onblur = "restorePlaceholder(this)" type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password1" placeholder="Password" required>
+                <input type="password" name="password2" placeholder="Confirm Password" required>
+                <button type="submit">Register</button>
+                <p>Already have an account? <a href="./login.html">Login</a></p>
+            </form>
+        </div>
+    </div>
+    </div>
+</body>
+
+</html> 

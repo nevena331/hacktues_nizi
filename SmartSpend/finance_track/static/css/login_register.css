@@ -1,12 +1,46 @@
 body {
     background-color: #ffffff;
     display: flex;
-    justify-content: center;
     font-family: Arial, Helvetica, sans-serif;
-    align-items: center;
     height: 100vh;
     margin: 0;
     color: #150b27;
+    flex-direction: column;
+}
+
+#navbar-unsigned{
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    background-color: #150b27;
+}
+.navbar-brand{
+    margin-top: 0;
+    margin-bottom: 0;  
+    margin-right: 3%;
+    margin-left: 3%;
+    
+}
+
+.welcome{
+    color:#ffffff;
+    align-items: center;
+    text-align: center;
+    flex:1;
+}
+
+#navbarNav{
+    margin:0 3% 0 3%;
+    display: inline;
+}
+
+
+.content{
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    display: flex;
 }
 
 .auth-container {
