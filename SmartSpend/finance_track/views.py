@@ -40,26 +40,6 @@ def process_receipt(request, receipt_id):
 
 
 
-# Use the sandbox URL for testing; switch to production as needed.
-# API_BASE_URL = "https://sandbox-b2b.revolut.com/api/1.0/"
-# api_key =  REVOLUT_API_KEY
-#  # Replace with your actual API key
-
-# # Set up headers with your authorization token.
-# headers = {
-#     "Authorization": f"Bearer {api_key}",
-#     "Content-Type": "application/json"
-# }
-
-# # Example: Fetch account information
-# endpoint = f"{API_BASE_URL}accounts"
-# response = requests.get(endpoint, headers=headers)
-
-# if response.ok:
-#     accounts = response.json()
-#     print("Account details:", accounts)
-# else:
-#     print("Error:", response.status_code, response.text)
 
 
 @require_http_methods(["GET", "POST"])
@@ -91,7 +71,7 @@ def truelayer_callback(request):
     request.session['refresh_token'] = token_data.get('refresh_token')
     request.session['expires_in'] = token_data.get('expires_in')
 
-    return JsonResponse(token_data)
+    return print()
 
 
 def connect_truelayer(request):
@@ -117,3 +97,38 @@ def get_accounts(request, access_token):
     return response.json()
 def frontpage(request):
     return render(request, "frontpage.html")
+
+
+def get_transactions(access_token, request, account_id):
+    """Retrieve transactions for a given account."""
+    user_ip = get_client_ip(request)
+    url = f"https://api.truelayer-sandbox.com/data/v1/accounts/{account_id}/transactions"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "X-PSU-IP": user_ip,
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.json()  # Expected to include a "results" list
+
+def transactions_view(request):
+    """View to display transaction history for all linked accounts."""
+    access_token = request.session.get("access_token")
+    if not access_token:
+        return HttpResponseBadRequest("No access token available. Please connect your bank account first.")
+
+    try:
+        accounts_data = get_accounts(access_token, request)
+        accounts = accounts_data.get("results", [])
+        transactions_all = {}
+        for account in accounts:
+            account_id = account.get("account_id")
+            if account_id:
+                tx_data = get_transactions(access_token, request, account_id)
+                transactions_all[account_id] = tx_data.get("results", [])
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+    # Render the transactions in a template
+    #return render(request, "transactions.html", {"transactions_all": transactions_all})
+    print(transactions_all)
