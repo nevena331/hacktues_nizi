@@ -114,7 +114,7 @@ AUTH_USER_MODEL = 'finance_track.User'
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / '/static/']
+STATICFILES_DIRS = [BASE_DIR / 'finance_track/static/']
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -127,3 +127,5 @@ TRUELAYER_CLIENT_ID = os.environ.get("sandbox-smartspend-9f4cc6")
 TRUELAYER_CLIENT_SECRET = os.environ.get("9f48e6dd-bc29-4796-8a89-d718a8cfa466")
 TRUELAYER_REDIRECT_URI = os.environ.get("http://127.0.0.1:5432/truelayer/callback")
 TRUELAYER_TOKEN_URL = "https://api.truelayer-sandbox.com/connect/token"
+
+LOGIN_REDIRECT_URL = '/'

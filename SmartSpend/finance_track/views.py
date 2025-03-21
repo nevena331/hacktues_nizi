@@ -11,6 +11,7 @@ from django.shortcuts import redirect
 from .utils import get_truelayer_auth_url
 from django.shortcuts import get_object_or_404, render
 from .models import Receipt
+from django.contrib.auth import views as auth_views
 
 def receipt_detail(request, receipt_id):
     receipt = get_object_or_404(Receipt, id=receipt_id)
@@ -133,40 +134,74 @@ def homepage(request):
     Renders the homepage.
     """
     context = {'page_title': 'HomePage'}
-    return render(request, 'homepage.html', context)
+    return render(request, 'finance_track/homepage.html', context)
 def dashboard(request):
     """
     Renders the Dashboard.
     """
     context = {'page_title': 'Dashboard'}
-    return render(request, 'dashboard.html', context)
+    return render(request, 'finance_track/dashboard.html', context)
 def transactions(request):
     """
     Renders the Transactions.
     """
     context = {'page_title': 'Transactions'}
-    return render(request, 'transactions.html', context)
+    return render(request, 'finance_track/transactions.html', context)
 def receipt_detail(request):
     """
     Renders the receipt_detail.
     """
     context = {'page_title': 'Receipt Detail'}
-    return render(request, 'receipt_detail.html', context)
+    return render(request, 'finance_track/receipt_detail.html', context)
 def receipt_results(request):
     """
     Renders the receipt_results.
     """
     context = {'page_title': 'Receipt Results'}
-    return render(request, 'receipt_results.html', context)
+    return render(request, 'finance_track/receipt_results.html', context)
 def add_expense(request):
     """
     Renders the add_expense.
     """
     context = {'page_title': 'Add Expense'}
-    return render(request, 'add_expense.html', context)
+    return render(request, 'finance_track/add_expense.html', context)
 def auth(request):
     """
     Renders the auth.
     """
     context = {'page_title': 'Authentification'}
-    return render(request, 'auth.html', context)
+    return render(request, 'finance_track/auth.html', context)
+
+from django.contrib.auth import authenticate, login, logout
+from .forms import RegisterForm, LoginForm
+from django.contrib import messages
+
+def register_view(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+            messages.success(request, "Registration successful.")
+            return redirect('login')
+    else:
+        form = RegisterForm()
+    return render(request, 'accounts/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('home')  # redirect to homepage
+        else:
+            messages.error(request, "Invalid credentials.")
+    else:
+        form = LoginForm()
+    return render(request, 'accounts/login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
