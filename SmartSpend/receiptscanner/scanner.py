@@ -283,4 +283,9 @@ def build_final_json(structured_data):
 
 structured = extract_structured_data(extracted_text, language_choice)
 final_json = build_final_json(structured)
-print(json.dumps(final_json, indent=4))
+
+import subprocess
+
+json_data = json.dumps(final_json)
+
+subprocess.run(["python3", "other_script.py", json_data])
