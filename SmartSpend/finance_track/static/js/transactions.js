@@ -37,7 +37,6 @@ function addTransaction() {
         <td>${description}</td>
         <td>$${amount}</td>
         <td class="${type === 'Income' ? 'text-success' : 'text-danger'}">${type}</td>
-        <td></td>
     `;
 
     document.getElementById("transaction-form").reset();
