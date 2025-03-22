@@ -30,18 +30,38 @@ function addTransaction() {
         return;
     }
 
-    const table = document.getElementById("transaction-table");
-    const row = table.insertRow();
-    row.innerHTML = `
-        <td>${date}</td>
-        <td>${description}</td>
-        <td>$${amount}</td>
-        <td class="${type === 'Income' ? 'text-success' : 'text-danger'}">${type}</td>
-    `;
-
-    document.getElementById("transaction-form").reset();
-    toggleForm();
+    fetch("/add-manual-transaction/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            date: date,
+            description: description,
+            amount: amount,
+            transaction_type: type
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            const table = document.getElementById("transaction-table");
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td>${data.date.split("T")[0]}</td>
+                <td>${data.description}</td>
+                <td>$${data.amount}</td>
+                <td class="${data.transaction_type === 'INCOME' ? 'text-success' : 'text-danger'}">${data.transaction_type}</td>
+            `;
+            document.getElementById("transaction-form").reset();
+            toggleForm();
+        }
+    })
+    .catch(error => console.error("Error:", error));
 }
+
 
 document.getElementById("receipt-image").addEventListener("change", function () {
     const file = this.files[0];
