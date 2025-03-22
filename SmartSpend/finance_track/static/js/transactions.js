@@ -37,13 +37,37 @@ function addTransaction() {
         <td>${description}</td>
         <td>$${amount}</td>
         <td class="${type === 'Income' ? 'text-success' : 'text-danger'}">${type}</td>
-        <td></td>
     `;
 
     document.getElementById("transaction-form").reset();
     toggleForm();
 }
 
-function uploadReceipt() {
-    const fileInput = document.getElementById("receipt-image");
+document.getElementById("receipt-image").addEventListener("change", function () {
+    const file = this.files[0];
+
+    if (!file) {
+        alert("Please select an image.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = function () {
+        const base64String = reader.result.split(",")[1]; // Extract Base64 data
+        sendToBackend(base64String);
+    };
+    reader.readAsDataURL(file);
+});
+
+function sendToBackend(base64String) {
+    fetch("/upload-receipt/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ image: base64String })
+    })
+    .then(response => response.json())
+    .then(data => alert("Receipt uploaded successfully!"))
+    .catch(error => console.error("Error:", error));
 }
