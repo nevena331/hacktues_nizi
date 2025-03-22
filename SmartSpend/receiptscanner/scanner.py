@@ -1,13 +1,42 @@
+#Decoder
 import os
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import base64
+import json
+import cv2
+import numpy as np
+
+image = None 
+
+@csrf_exempt
+def upload_receipt(request):
+    global image  
+
+    if request.method == "POST":
+        data = json.loads(request.body)
+        image_data = data.get("image")
+
+        if not image_data:
+            return JsonResponse({"error": "No image data received"}, status=400)
+
+        image_bytes = base64.b64decode(image_data)
+
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if image is None:
+            return JsonResponse({"error": "Invalid image data"}, status=400)
+
+        return JsonResponse({"message": "Receipt processed successfully!"})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
 import imutils
 import pytesseract
 import re
-import json
 from dateutil import parser
 from imutils.perspective import four_point_transform
-import numpy as np
-import cv2
-
 
 os.environ["QT_QPA_PLATFORM"] = "offscreen"  
 
@@ -39,10 +68,8 @@ def set_language_config(language):
 
 config = set_language_config(language_choice)
 
-image = cv2.imread('./testimages/testimage4.jpeg')
 if image is None:
     print("Error: Image not loaded. Check your file path.")
-    exit(1)
 
 #Preprocessing
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -257,4 +284,3 @@ def build_final_json(structured_data):
 structured = extract_structured_data(extracted_text, language_choice)
 final_json = build_final_json(structured)
 print(json.dumps(final_json, indent=4))
-
