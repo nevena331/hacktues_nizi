@@ -53,7 +53,7 @@ document.getElementById("receipt-image").addEventListener("change", function () 
 
     const reader = new FileReader();
     reader.onloadend = function () {
-        const base64String = reader.result.split(",")[1]; // Extract Base64 data
+        const base64String = reader.result.split(",")[1]; 
         sendToBackend(base64String);
     };
     reader.readAsDataURL(file);
