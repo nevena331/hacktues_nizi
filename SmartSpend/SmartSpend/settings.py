@@ -128,4 +128,4 @@ TRUELAYER_CLIENT_SECRET = os.environ.get("9f48e6dd-bc29-4796-8a89-d718a8cfa466")
 TRUELAYER_REDIRECT_URI = os.environ.get("http://127.0.0.1:8000/truelayer/callback")
 TRUELAYER_TOKEN_URL = "https://api.truelayer-sandbox.com/connect/token"
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/dashboard'
