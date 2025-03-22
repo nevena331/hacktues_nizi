@@ -62,6 +62,23 @@ function addTransaction() {
     .catch(error => console.error("Error:", error));
 }
 
+function handleUpload() {
+    const fileInput = document.getElementById("receipt-image");
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please select an image.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = function () {
+        const base64String = reader.result.split(",")[1]; 
+        console.log("Base64 ready to send:", base64String.substring(0, 50) + "...");
+        sendToBackend(base64String);
+    };
+    reader.readAsDataURL(file);
+}
 
 document.getElementById("receipt-image").addEventListener("change", function () {
     const file = this.files[0];
