@@ -1,5 +1,7 @@
 import json
 import requests
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 from dateutil import parser
 import base64
 import cv2
@@ -239,3 +241,38 @@ def upload_receipt(request):
             "source": transaction.source
         }
     })
+@csrf_exempt
+def add_manual_transaction(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        date_str = data.get("date")
+        description = data.get("description")
+        amount = data.get("amount")
+        transaction_type = data.get("transaction_type")
+
+        user = request.user if request.user.is_authenticated else None
+
+        # Convert date string to datetime
+        try:
+            date_obj = parser.parse(date_str)
+        except:
+            date_obj = timezone.now()
+
+        transaction = Transaction.objects.create(
+            user=user,
+            transaction_type=transaction_type.upper(),
+            amount=amount,
+            category="Manual",
+            description=description,
+            date=date_obj,
+            source="manual"
+        )
+
+        return JsonResponse({
+            "id": transaction.id,
+            "transaction_type": transaction.transaction_type,
+            "amount": float(transaction.amount),
+            "description": transaction.description,
+            "date": transaction.date.isoformat()
+        })
+    return JsonResponse({"error": "Invalid request"}, status=400)
