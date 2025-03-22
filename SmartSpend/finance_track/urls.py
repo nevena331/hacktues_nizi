@@ -15,6 +15,7 @@ urlpatterns = [
     path('truelayer/callback/', views.truelayer_callback, name='truelayer_callback'),
     path("receipt/<int:receipt_id>/process/", process_receipt, name="process_receipt"),
     path('upload-receipt/', views.upload_receipt, name='upload_receipt'),
+    path('add-manual-transaction/', views.add_manual_transaction, name='add_manual_transaction'),
     path('register/', views.register_view, name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='finance_track/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='finance_track/homepage.html'), name='logout'),
