@@ -1,28 +1,21 @@
 import json
 import requests
-from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
-from dateutil import parser
 import base64
 import cv2
-import json
+import re
+import uuid
 import numpy as np
 import pytesseract
-import uuid
-import re
 from dateutil import parser
-from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
-from django.core.files.base import ContentFile
-from django.utils import timezone
-from .models import Receipt, Transaction
-from .expense_classifier import classify_expense
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.core.files.base import ContentFile
+from django.utils import timezone
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, logout, get_user_model, views, authenticate
+from django.contrib.auth import login, logout, get_user_model, authenticate, views as auth_views
 from .models import Receipt, Transaction
 from .expense_classifier import classify_expense
 from .utils import get_client_ip, get_truelayer_auth_url
@@ -146,29 +139,51 @@ def register_view(request):
         if not first_name or not last_name or not email or not password:
             messages.error(request, "All fields are required.")
             return render(request, "finance_track/register.html")
-        
         if User.objects.filter(email=email).exists():
             messages.error(request, "A user with that email already exists.")
-            return render(request, "finance_track/register.html", {
-                "first_name": first_name,
-                "last_name": last_name,
-                "email": email,
-            })
-        
+            return render(request, "finance_track/register.html", {"first_name": first_name, "last_name": last_name, "email": email})
         user = User.objects.create_user(email=email, password=password)
         user.first_name = first_name
         user.last_name = last_name
         user.save()
-        
         messages.success(request, "Registration successful. Please log in.")
         return redirect('login')
-    
     return render(request, "finance_track/register.html")
 
 def logout_view(request):
     logout(request)
     return redirect("finance_track/homepage")
 
+@csrf_exempt
+def add_manual_transaction(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        date_str = data.get("date")
+        description = data.get("description")
+        amount = data.get("amount")
+        transaction_type = data.get("transaction_type")
+        user = request.user if request.user.is_authenticated else None
+        try:
+            date_obj = parser.parse(date_str)
+        except:
+            date_obj = timezone.now()
+        transaction = Transaction.objects.create(
+            user=user,
+            transaction_type=transaction_type.upper(),
+            amount=amount,
+            category="Manual",
+            description=description,
+            date=date_obj,
+            source="manual"
+        )
+        return JsonResponse({
+            "id": transaction.id,
+            "transaction_type": transaction.transaction_type,
+            "amount": float(transaction.amount),
+            "description": transaction.description,
+            "date": transaction.date.isoformat()
+        })
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
 @csrf_exempt
 def upload_receipt(request):
@@ -183,7 +198,7 @@ def upload_receipt(request):
         return JsonResponse({"error": "No image data received"}, status=400)
     try:
         image_bytes = base64.b64decode(image_data)
-    except Exception as e:
+    except:
         return JsonResponse({"error": "Image decoding failed"}, status=400)
     nparr = np.frombuffer(image_bytes, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -198,7 +213,7 @@ def upload_receipt(request):
     if amount_match:
         try:
             predicted_amount = float(amount_match.group(1).replace(",", "."))
-        except ValueError:
+        except:
             predicted_amount = 0.0
     else:
         predicted_amount = 0.0
@@ -228,7 +243,7 @@ def upload_receipt(request):
             "id": receipt.id,
             "scanned_text": receipt.scanned_text,
             "predicted_category": receipt.predicted_category,
-            "predicted_amount": float(receipt.predicted_amount) if receipt.predicted_amount else 0,
+            "predicted_amount": float(receipt.predicted_amount),
             "date_scanned": receipt.date_scanned.isoformat()
         },
         "transaction": {
@@ -241,38 +256,3 @@ def upload_receipt(request):
             "source": transaction.source
         }
     })
-@csrf_exempt
-def add_manual_transaction(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        date_str = data.get("date")
-        description = data.get("description")
-        amount = data.get("amount")
-        transaction_type = data.get("transaction_type")
-
-        user = request.user if request.user.is_authenticated else None
-
-        # Convert date string to datetime
-        try:
-            date_obj = parser.parse(date_str)
-        except:
-            date_obj = timezone.now()
-
-        transaction = Transaction.objects.create(
-            user=user,
-            transaction_type=transaction_type.upper(),
-            amount=amount,
-            category="Manual",
-            description=description,
-            date=date_obj,
-            source="manual"
-        )
-
-        return JsonResponse({
-            "id": transaction.id,
-            "transaction_type": transaction.transaction_type,
-            "amount": float(transaction.amount),
-            "description": transaction.description,
-            "date": transaction.date.isoformat()
-        })
-    return JsonResponse({"error": "Invalid request"}, status=400)
