@@ -256,3 +256,13 @@ def upload_receipt(request):
             "source": transaction.source
         }
     })
+def transactions_page(request):
+    if request.user.is_authenticated:
+        transactions = Transaction.objects.filter(user=request.user)
+    else:
+        transactions = []
+    context = {
+        'page_title': 'Transactions',
+        'transactions': transactions
+    }
+    return render(request, 'finance_track/transactions.html', context)

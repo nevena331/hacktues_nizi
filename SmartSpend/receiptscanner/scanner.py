@@ -288,4 +288,4 @@ import subprocess
 
 json_data = json.dumps(final_json)
 
-subprocess.run(["python3", "other_script.py", json_data])
+subprocess.run(["python3", "../views.py", json_data])
