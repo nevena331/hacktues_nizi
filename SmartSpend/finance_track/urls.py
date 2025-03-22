@@ -5,12 +5,12 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.homepage),
-    path('dashboard/', views.dashboard),
+    path('dashboard/', views.dashboard, name='dashboard'),
     path('homepage/', views.homepage, name='homepage'),
-    path('transactions/', views.transactions_page),
-    path('receipt_detail/', views.receipt_detail),
-    path('receipt_results/', views.receipt_results),
-    path('add_expense/', views.add_expense),
+    path('transactions/', views.transactions_page, name='transactions_page'),
+    path('receipt_detail/', views.receipt_detail, name='receipt_detail'),
+    path('receipt_results/', views.receipt_results, name='receipt_results'),
+    path('add_expense/', views.add_expense, name='add_expense'),
     path('connect_truelayer/', views.connect_truelayer, name='connect_truelayer'),
     path('truelayer/callback/', views.truelayer_callback, name='truelayer_callback'),
     path("receipt/<int:receipt_id>/process/", process_receipt, name="process_receipt"),
